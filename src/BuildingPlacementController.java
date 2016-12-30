@@ -8,7 +8,6 @@ public class BuildingPlacementController {
     	TilePosition ret = null;
     	int maxDist = 3;
     	int stopDist = 40;
-    	
     	// Refinery, Assimilator, Extractor
     	if (buildingType.isRefinery()) {
     		for (Unit n : Globals.game.neutral().getUnits()) {

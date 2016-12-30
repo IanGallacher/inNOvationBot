@@ -35,8 +35,8 @@ public class ScoutingController {
 	        for (Unit myUnit : Globals.self.getUnits()) {
 	        	
 	            if (myUnit.getType().isWorker()) {
-
-	    	        System.out.println("Set Scout");
+// gets called a bunch of times.
+//	    	        System.out.println("Set Scout");
 	            	setWorkerScout(myUnit);
 	            }
 	        }

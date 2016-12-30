@@ -2,7 +2,10 @@ import bwapi.*;
 
 import bwta.BWTA;
 
-public class TestBot1 extends DefaultBWListener {
+
+// BunBot only supports Protoss, but there is code that mentions the other races scattered throughout the code. 
+// Hopefully that code saves someone time down the road when they refactor it to support different races. 
+public class BunBot extends DefaultBWListener {
 
     private Mirror mirror = new Mirror();
     public void run() {
@@ -43,8 +46,9 @@ public class TestBot1 extends DefaultBWListener {
     	UnitController.ControllAllUnits();
     	
     	// Debug data to draw
-    	
-
+    	DebugController.OnFrame(); // Be sure to clear the debug console.
+    	DebugController.DrawWorkerPaths();
+		MacroController.DebugVariables();
     }
     
     @Override
@@ -67,6 +71,6 @@ public class TestBot1 extends DefaultBWListener {
     }
 
     public static void main(String[] args) {
-        new TestBot1().run();
+        new BunBot().run();
     }
 }

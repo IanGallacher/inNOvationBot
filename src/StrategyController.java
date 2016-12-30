@@ -4,13 +4,19 @@ public class StrategyController {
 	
 	public enum UnitProduction { FocusOnWorkers, FocusOnArmy };
 
-	public enum TechGoal { CommmandCenter, Factory };
+	public enum TechGoal { Nexus, DragoonTech };
 	
 	
 	private int WorkerGoalBeforeExpand = 20;
 	private int ArmySupplyGoal = 0;
-	private static TechGoal techGoal = TechGoal.Factory;
+	private static TechGoal techGoal = TechGoal.DragoonTech;
 	private static UnitProduction unitProductionFocus = UnitProduction.FocusOnWorkers;
+	
+	
+	
+	static boolean hasGas;
+	static boolean hasGateway;
+	static boolean hasCyberneticsCore;
 	
 	
 
@@ -19,16 +25,38 @@ public class StrategyController {
 	}
 	
 	public static void CalculateStrategy() {
-		techGoal = TechGoal.Factory;
+		techGoal = TechGoal.DragoonTech;
 		unitProductionFocus = UnitProduction.FocusOnWorkers;
+		
+		hasGas = false;
+		hasGateway = false;
+		hasCyberneticsCore = false;
 	}
 	
 	public static void ExecuteStrategy() {
-		MacroController.DebugInfo();
-		
-		if(techGoal == TechGoal.Factory) {
+		if(techGoal == TechGoal.DragoonTech) {
 			MacroController.PreventSupplyBlock();
-	    	MacroController.BuildBuilding(UnitType.Terran_Barracks);
+			
+			if(hasGas == false)
+			{
+				MacroController.HarvestGas(3);
+				hasGas = true;
+			}
+
+			if(hasGateway == false) {
+				if(MacroController.BuildBuilding(UnitType.Protoss_Gateway))
+				{
+					System.out.println("MADE GATEWAY YEAH YEAH YEAH");
+
+					hasGateway = true;
+				}
+			} else if (hasCyberneticsCore == false && MacroController.BuildBuilding(UnitType.Protoss_Cybernetics_Core) ) {
+				System.out.println("has cybernetics coreeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
+				hasCyberneticsCore = true;
+			} else {
+				//MacroController.BuildBuilding(UnitType.Protoss_Gateway);
+			}
+	    	MacroController.BuildBuilding(UnitType.Protoss_Gateway);
 	    	
 	    	if(unitProductionFocus == UnitProduction.FocusOnWorkers)
 	    	{
@@ -44,8 +72,8 @@ public class StrategyController {
 		} 
 		
 		// Save up to expand. 
-		if(techGoal == TechGoal.CommmandCenter) {
-	    	MacroController.BuildBuilding(UnitType.Terran_Command_Center);
+		if(techGoal == TechGoal.Nexus) {
+	    	MacroController.BuildBuilding(UnitType.Protoss_Nexus);
 		}
     	
     	
