@@ -55,6 +55,11 @@ public class InformationManager {
 //		updateUnitInfo();
 //		updateBuildingInfo();
 //	}
+	
+	static void writeToDebugConsole() {
+		int i = _playerUnitData.get(Globals.self).getNumUnits(UnitType.Protoss_Nexus);
+		DebugController.debugConsolePrint("Nexus", i);
+	}
 
 	
 	
@@ -81,7 +86,7 @@ public class InformationManager {
 	        return;
 	    }
 	
-	    _playerUnitData.get(unit.getPlayer()).unitKilled(unit);
+	    _playerUnitData.get(unit.getPlayer()).removeUnit(unit);
 	    
 	    if(unit.getPlayer() == Globals.enemy && unit.getType().isBuilding()) {
 	    	EnemeyBuildings.remove(unit.getID());

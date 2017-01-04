@@ -28,11 +28,11 @@ class PlayerUnitData
 	    public int getGasLost() { return _gasLost; }
 	    
 	    // UnitTypeCount is defined inside PlayerUnitData (bottom of this file)
-	    UnitTypeCount _numUnits;
+	    UnitTypeCount _numUnits = new UnitTypeCount();
 	    public int getNumUnits(UnitType ut) { return _numUnits.getCount(ut); }
 	    
 	    // UnitTypeCount is defined inside PlayerUnitData (bottom of this file)
-	    UnitTypeCount _numDeadUnits;
+	    UnitTypeCount _numDeadUnits = new UnitTypeCount();
 	    public int getNumDeadUnits(UnitType ut) { return _numDeadUnits.getCount(ut); }
 
 	    
@@ -51,7 +51,7 @@ class PlayerUnitData
 	    	assert unit != null; 
 
 		    // The unit has never been seen before. 
-		    if (this.UnitData.containsKey(unit) == false)
+		    if (this.UnitData.containsKey(unit.getID()) == false)
 		    {
 			    // Make sure there is not going to be a null reference exception down the line.
 		        this.UnitData.put(unit.getID(), new UnitInfo());
@@ -63,7 +63,7 @@ class PlayerUnitData
 		    	this._numUnits.increment(unit.getType());
 		    }
 		    
-			UnitInfo ui     = this.UnitData.get(unit);
+			UnitInfo ui     = this.UnitData.get(unit.getID());
 		    ui.unit         = unit;
 		    ui.player       = unit.getPlayer();
 			ui.lastPosition = unit.getPosition();
@@ -80,7 +80,7 @@ class PlayerUnitData
 	    	updateUnit(unit); // NumOfUnits will automatically be changed.
 	    }
 	    
-	    public void unitKilled(Unit unit) {
+	    public void removeUnit(Unit unit) {
 	    	this._gasLost += unit.getType().gasPrice();
 	    	this._mineralsLost += unit.getType().mineralPrice();
 	    	
@@ -107,7 +107,7 @@ class PlayerUnitData
 	    // A class that lets you know how many known units of a certain type a player has. 
 	    // Example, player has 2 Nexus, enemy is known to have 5 drones (but may have more)
 	    class UnitTypeCount {
-		    HashMap<UnitType, Integer> _numUnits;
+		    HashMap<UnitType, Integer> _numUnits = new HashMap<UnitType, Integer>();
 			
 			private void increment(UnitType ut) {
 		    	// Prevent a null reference exception by making sure the UnitType exists in the HashMap.
@@ -116,7 +116,7 @@ class PlayerUnitData
 			    
 			    // The Integer wrapper class is immutable. Get the value, and set the value to a new Integer.
 		    	int currentVal = _numUnits.get(ut);
-		    	_numUnits.put(ut, currentVal - 1);
+		    	_numUnits.put(ut, currentVal + 1);
 				
 			}
 			

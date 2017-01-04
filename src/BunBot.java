@@ -49,6 +49,7 @@ public class BunBot extends DefaultBWListener {
     	DebugController.OnFrame(); // Be sure to clear the debug console.
     	DebugController.DrawWorkerPaths();
 		MacroController.DebugVariables();
+		InformationManager.writeToDebugConsole();
     }
     
     @Override
