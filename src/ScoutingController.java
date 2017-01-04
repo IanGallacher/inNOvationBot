@@ -36,7 +36,7 @@ public class ScoutingController {
 	        	
 	            if (myUnit.getType().isWorker()) {
 // gets called a bunch of times.
-//	    	        System.out.println("Set Scout");
+	    	        System.out.println("Set Scout");
 	            	setWorkerScout(myUnit);
 	            }
 	        }
@@ -63,16 +63,12 @@ public class ScoutingController {
         System.out.println("set scout");
         
 	    _workerScout = unit;
+	    UnitController.get(unit.getID()).stopTask();
 //	    WorkerManager::Instance().setScoutWorker(_workerScout);
 	}
 	
 	static void drawScoutInformation(int x, int y)
 	{
-//	    if (!Config::Debug::DrawScoutInfo)
-//	    {
-//	        return;
-//	    }
-	
 		Globals.game.drawTextScreen(x, y, "ScoutInfo: " + _scoutStatus);
 	    for (int i = 0; i < _enemyRegionVertices.size(); ++i)
 	    {
@@ -88,7 +84,7 @@ public class ScoutingController {
 			return;
 		}
 	
-	    // int scoutHP = _workerScout.getHitPoints() + _workerScout.getShields();
+	     int scoutHP = _workerScout.getHitPoints() + _workerScout.getShields();
 	    
 	
 		// get the enemy base location, if we have one

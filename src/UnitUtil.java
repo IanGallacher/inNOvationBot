@@ -154,38 +154,7 @@ class UnitUtil
 	
 	    return weapon.maxRange();
 	}
-	
-	int GetAllUnitCount(UnitType type)
-	{
-	    int count = 0;
-	    for (Unit unit : Globals.self.getUnits())
-	    {
-	        // trivial case: unit which exists matches the type
-	        if (unit.getType() == type)
-	        {
-	            count++;
-	        }
-	
-	        // case where a zerg egg contains the unit type
-	        if (unit.getType() == UnitType.Zerg_Egg && unit.getBuildType() == type)
-	        {
-	            count += type.isTwoUnitsInOneEgg() ? 2 : 1;
-	        }
-	
-	        // case where a building has started constructing a unit but it doesn't yet have a unit associated with it
-//	        if (unit.getRemainingTrainTime() > 0)
-//	        {
-//	            UnitType trainType = unit.getLastCommand().getUnitType();
-//	
-//	            if (trainType == type && unit.getRemainingTrainTime() == trainType.buildTime())
-//	            {
-//	                count++;
-//	            }
-//	        }
-	    }
-	
-	    return count;
-	}
+
 	
 	
 	Unit GetClosestUnitTypeToTarget(UnitType type, Position target)

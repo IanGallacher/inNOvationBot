@@ -9,107 +9,164 @@ import bwta.BWTA;
 
 
 public class MacroController {
-    private static int planned_production = 10; // start at 8 to account for the four scv's that spawn.
-    public static int GetPlannedProduction() { return planned_production; } // for debugging
+    private static int _planned_production = 10; // start at 8 to account for the four scv's that spawn.
     
-    private static int planned_minerals = 502;
-    public static int GetPlannedMinerals() { return planned_minerals; } // for debugging
+    // The game starts by creating a Nexus. OnUnitCreate will get called, and our engine will think that we are planning to spend 400 minerals to build a Nexus.
+    // In order to start the game with 0 planned minerals, account for the 400 minerals that the nexus will require. 
+    private static int _planned_minerals = UnitType.Protoss_Nexus.mineralPrice(); 
     
-    private static int planned_supply_depots = 0; // don't spend all our money on depots if capped. 
-    public static int GetPlannedSupplyDepots() { return planned_supply_depots; } // for debugging
+    private static int _planned_supply_depots = 0; // don't spend all our money on depots if capped. 
+    
+    
+    public static int _number_of_gateways = 0;
+    private static int _number_of_nexus = 1;
 
-    public static void DebugVariables() {
-    	DebugController.DebugConsolePrint("planned_production", planned_production);
-    	DebugController.DebugConsolePrint("planned_minerals", planned_minerals);
-    	DebugController.DebugConsolePrint("planned_supply_depots", planned_supply_depots);
+    public static void debugVariables() {
+//    	DebugController.debugConsolePrint("planned_production", _planned_production);
+//    	DebugController.debugConsolePrint("planned_minerals", _planned_minerals);
+//    	DebugController.debugConsolePrint("planned_supply_depots", _planned_supply_depots);
+//    	DebugController.debugConsolePrint("Production Capacity", productionCapacity());
+    	
+    	DebugController.debugConsolePrint("_number_of_gateways", _number_of_gateways);
+    	DebugController.debugConsolePrint("_number_of_nexus", _number_of_nexus);
+    	DebugController.debugConsolePrint("UnitController.workers.size()", UnitController.workers.size());
+    	
+    //	DebugController.debugConsolePrint("GREATER", Globals.self.supplyUsed() + productionCapacity() );
+    //	DebugController.debugConsolePrint("LESSER", Globals.self.supplyTotal() + ( _planned_supply_depots * UnitType.Protoss_Pylon.supplyProvided() ));
     }
     
     // Always called when a unit is created by the MasterBot
     public static void onUnitCreate(Unit unit) {
-        planned_production -= unit.getType().supplyRequired();
+        _planned_production -= unit.getType().supplyRequired();
         
-        if(unit.getType().isBuilding() && unit.getType() != UnitType.Special_Protoss_Temple)
-        	planned_minerals -= unit.getType().mineralPrice();
+        // If we don't check for the unit belonging to the main player, sometimes neutral structures at the start of the game will mess up the initial mineral count.
+        if(unit.getType().isBuilding() && unit.getPlayer() == Globals.self)
+        	_planned_minerals -= unit.getType().mineralPrice();
     }
     
-    public static void onUnitComplete(Unit unit)
-    {
+    public static void onUnitComplete(Unit unit) {
     	if(unit.getType() == UnitType.Protoss_Pylon)
     	{
-    		planned_supply_depots--;
+    		_planned_supply_depots--;
+    	}
+    	if(unit.getType() == UnitType.Protoss_Gateway)
+    	{
+    		_number_of_gateways++;
     	}
     }
     
-    // Every frame, see if our planned production will require another supply depot.
-    public static void PreventSupplyBlock()
-    {
+    // Every frame, see if more pylons are required. 
+    public static void preventSupplyBlock() {
     	// if there is a pylon in production, don't keep spending minerals on more pylons. 
-        if ((Globals.self.supplyTotal() + (planned_supply_depots * UnitType.Protoss_Pylon.supplyProvided() ) - (Globals.self.supplyUsed() + planned_production) <= 0)) {
-        	BuildBuilding(UnitType.Protoss_Pylon);
+    	
+    	
+    	// Full breakdown of how this works. The following few lines are all part of one big if statement
+    	
+    	// If the current supply that we have plus the total amount of things that could be made 
+        if ( 
+        	    ( Globals.self.supplyUsed() + productionCapacity() )  // We used to compare only against things that are planned on being made // _planned_production)
+        // Is greater than 
+        		>=
+        // the player supply capacity, including pylons in production. 
+        // The pylons in production is key, otherwise you will build hundreds of pylons while supply blocked.
+        	   ( Globals.self.supplyTotal() + ( _planned_supply_depots * UnitType.Protoss_Pylon.supplyProvided() ) ) 
+           ) 
+        {
+        	buildBuilding(UnitType.Protoss_Pylon);
         }
     }
     
-    public static boolean BuildBuilding(UnitType building)
-    {
+    
+    public static boolean buildBuilding(UnitType building) {
     	assert(building.isBuilding());
-    	
-    	
-    	if(building != UnitType.Protoss_Pylon && Globals.self.supplyTotal() < 20) {
-    		return false;
-    	}
-    	
-    	// System.out.println(building.toString());
-        if (Globals.self.minerals()-planned_minerals >= building.mineralPrice()) {
-        	System.out.println("Building Building");
-        	//iterate over units to find a worker
-        	for (Unit myUnit : Globals.self.getUnits()) {
-				if (myUnit.getType() == UnitType.Protoss_Probe && myUnit.isConstructing() == false) {
-        			
-        			//get a nice place to build a supply depot 
-        			TilePosition buildTile = BuildingPlacementController.getBuildTile (
-        			    													 myUnit, 
-																			 building, 
-																			 Globals.self.getStartLocation() );
-        			//and, if found, send the worker to build it (and leave others alone - break;)
-        			if (buildTile != null) {
 
-        	        	System.out.println("Building not null");
-
-        		    	if(building == UnitType.Protoss_Pylon)
-        		    	{
-        		    		planned_supply_depots++;
-        		    	}
-        		    	
-            			UnitController.get(myUnit.getID()).StopTask();
-        				
-            			if(myUnit.build(building, buildTile) )
-            			{
-            				planned_minerals += building.mineralPrice();
-            			}
-        			}
-        			else {
-        				System.out.println("building is null");
-        			}
-        		}
-        	}
-        	return true;
-        } else {
-            return false;
-        }
-
+    	
+    	// Don't try to build anything that requires power before there is a pylon.
+    	if(Globals.self.supplyTotal() < 15*2 // all supply is double in BWAPI due to zerglings taking half supply.
+    	&& building != UnitType.Protoss_Nexus 
+    	&& building != UnitType.Protoss_Pylon 
+    	&& building != UnitType.Protoss_Assimilator)
+    			return false;
+    	
+		//get a nice place to build a supply depot 
+		TilePosition buildTileLocation = BuildingPlacementController.getBuildTile 
+											(
+												 building, 
+												 Globals.self.getStartLocation() 
+											);
+    	
+		return buildAtLocation(building, buildTileLocation);
     }    
     
-    private static void TrainUnit(Unit building, UnitType unitToTrain) {
+    
+    public static boolean buildAtLocation(UnitType building, TilePosition buildLocation) {
+    	assert building.isBuilding();
+    	assert buildLocation != null;
+
+    	
+    	// Don't try to build anything that requires power before there is a pylon.
+    	if(Globals.self.supplyTotal() < 15*2 // all supply is double in BWAPI due to zerglings taking half supply.
+    	&& building != UnitType.Protoss_Nexus 
+    	&& building != UnitType.Protoss_Pylon 
+    	&& building != UnitType.Protoss_Assimilator)
+    			return false;
+    	
+    	// System.out.println(building.toString());
+        if (Globals.self.minerals()-_planned_minerals >= building.mineralPrice()) {
+        	// Look for workers that can build our building. 
+        	// TODO: Find the closest worker that can build the building. 
+        	for (UnitController workerController : UnitController.workers.values()) 
+        	{
+        		Unit worker = workerController.thisUnit;
+        		// If the worker is busy, find a different one
+				if (worker.isConstructing() == true) continue;
+				// Although this check should have already been called by now, 
+				// make sure that THIS PARTICULAR WORKER can build at this location.
+				// We should have already checked to make sure the build location is vacant. 
+				// If the worker can not build at the specified location, find a different worker. 
+				if (Globals.game.canBuildHere(buildLocation, building, worker) != true) continue;
+				
+				
+		    	if(building == UnitType.Protoss_Pylon)
+		    	{
+		    		_planned_supply_depots++;
+		    	}
+
+				_planned_minerals += building.mineralPrice();
+		    	workerController.buildBuilding(building, buildLocation);
+		    	return true;
+//		    	
+//    			if(worker.build(building, buildLocation) )
+//    			{
+//    				_planned_minerals += building.mineralPrice();
+//    			}
+//    			
+//    			worker.move(buildLocation.toPosition());
+//		    	
+//    			workerController.stopTask();
+//    			
+//    			// Send the worker to build the building (
+//    			// No need to keep looking for a worker - we found one and sent it to go build something;
+//            	return true;
+        	}
+        	
+        	// Not a single one of our workers are able to build the building. Very unlikely. 
+        	return false;
+        } else {
+        	// We don't have enough minerals to afford the building.
+            return false;
+        }
+    }
+    
+    private static void trainUnit(Unit building, UnitType unitToTrain) {
         if(building.train(unitToTrain))
         { 
-        	planned_production += unitToTrain.supplyRequired();
-        	System.out.println("supply required: " + unitToTrain.supplyRequired() );
+        	_planned_production += unitToTrain.supplyRequired();
         }
     }
     
     // Trains a worker at all command centers.
-    public static void TrainWorkers () {
-        
+    public static void trainWorkers() {
         // iterate through my units
         for (Unit myUnit : Globals.self.getUnits()) {
         	
@@ -118,16 +175,16 @@ public class MacroController {
             		&& myUnit.getTrainingQueue().isEmpty() 
             		&& myUnit.isBeingConstructed() == false 
             		&& Globals.self.supplyTotal() > Globals.self.supplyUsed() 
-            		&& Globals.self.minerals() - planned_minerals >= UnitType.Protoss_Probe.mineralPrice()
+            		&& Globals.self.minerals() - _planned_minerals >= UnitType.Protoss_Probe.mineralPrice()
+            		&& UnitController.workers.size() <= 21 * InformationManager.getUnitCount(UnitType.Protoss_Nexus, Globals.self)
             	) 
             {
-            	TrainUnit(myUnit, UnitType.Protoss_Probe);
+            	trainUnit(myUnit, UnitType.Protoss_Probe);
             }
         }
     }
     
-    public static void TrainArmy()
-    {
+    public static void trainArmy() {
         // iterate through my units
         for (Unit myUnit : Globals.self.getUnits()) {
             
@@ -135,8 +192,8 @@ public class MacroController {
             		&& myUnit.getTrainingQueue().isEmpty() 
             		&& myUnit.isBeingConstructed() == false &&
             		Globals.self.supplyTotal() > Globals.self.supplyUsed() 
-            		&& Globals.self.minerals() - planned_minerals >= UnitType.Protoss_Zealot.mineralPrice()) {
-            	TrainUnit(myUnit, UnitType.Protoss_Zealot);
+            		&& Globals.self.minerals() - _planned_minerals >= UnitType.Protoss_Zealot.mineralPrice()) {
+            	trainUnit(myUnit, UnitType.Protoss_Zealot);
                 
                 bwta.Region r = BWTA.getRegion(Globals.self.getStartLocation().toPosition());
                 myUnit.setRallyPoint(r.getChokepoints().get(0).getCenter());
@@ -144,18 +201,24 @@ public class MacroController {
         }
     }
     
-    public static boolean HarvestGas(int numberOfWorkersToHarvest) {
-    	if( BuildBuilding(UnitType.Protoss_Assimilator) )
+    public static boolean harvestGas(int numberOfWorkersToHarvest) {
+    	if( buildBuilding(UnitType.Protoss_Assimilator) )
     		return true;
     	return false;
     }
     
-    private static void AssignJobsToIdleWorkers()
-    {
-    	FinishIncompleteStructures();
+    // total amount of supply that can possibly be in production.
+    public static int productionCapacity() { 
+    	// Probes take take up twice as much supply as usual because two can finish before a pylon is done.
+    	return (4 * _number_of_nexus) + (4 * _number_of_gateways);
     }
     
-    private static void FinishIncompleteStructures()
+    // Terran has to send workers to complete buildings if the construction worker is killed.
+    private static void assignJobsToIdleWorkers() {
+    	finishIncompleteStructures();
+    }
+    
+    private static void finishIncompleteStructures()
     {
     	
     }

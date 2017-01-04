@@ -7,73 +7,86 @@ public class StrategyController {
 	public enum TechGoal { Nexus, DragoonTech };
 	
 	
-	private int WorkerGoalBeforeExpand = 20;
-	private int ArmySupplyGoal = 0;
+	private static int _workerGoalBeforeExpand = 15;
+	private static int _armySquadSizeGoal = 15;
 	private static TechGoal techGoal = TechGoal.DragoonTech;
 	private static UnitProduction unitProductionFocus = UnitProduction.FocusOnWorkers;
 	
 	
 	
 	static boolean hasGas;
-	static boolean hasGateway;
 	static boolean hasCyberneticsCore;
+	static boolean hasExpansion;
 	
 	
 
-	public static void DetectStrategy() {
+	public static void detectStrategy() {
 		
 	}
 	
-	public static void CalculateStrategy() {
+	public static void calculateStrategy() {
 		techGoal = TechGoal.DragoonTech;
 		unitProductionFocus = UnitProduction.FocusOnWorkers;
 		
 		hasGas = false;
-		hasGateway = false;
 		hasCyberneticsCore = false;
+		hasExpansion = false;
 	}
 	
-	public static void ExecuteStrategy() {
-		if(techGoal == TechGoal.DragoonTech) {
-			MacroController.PreventSupplyBlock();
+	
+	
+	
+	// be sure to only call once per frame.
+	public static void executeStrategy() {
+		if(techGoal == TechGoal.DragoonTech) { // heavy macro strategy
+			MacroController.preventSupplyBlock();
 			
-			if(hasGas == false)
-			{
-				MacroController.HarvestGas(3);
-				hasGas = true;
-			}
-
-			if(hasGateway == false) {
-				if(MacroController.BuildBuilding(UnitType.Protoss_Gateway))
+//			if(hasGas == false)
+//			{
+//				MacroController.HarvestGas(3);
+//				hasGas = true;
+//			}
+			
+			
+			// Mineral spending goals.
+			
+			if(UnitController.workers.size() > _workerGoalBeforeExpand && hasExpansion == false) {
+				techGoal = TechGoal.Nexus;
+				System.out.printf("EXPANDING");
+			} else if(MacroController._number_of_gateways < 1 || hasCyberneticsCore == true) {
+				if(MacroController.buildBuilding(UnitType.Protoss_Gateway))
 				{
 					System.out.println("MADE GATEWAY YEAH YEAH YEAH");
-
-					hasGateway = true;
 				}
-			} else if (hasCyberneticsCore == false && MacroController.BuildBuilding(UnitType.Protoss_Cybernetics_Core) ) {
-				System.out.println("has cybernetics coreeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
+			} else if(hasGas == false && MacroController.buildBuilding(UnitType.Protoss_Assimilator)) {
+				hasGas = true;
+			} else if (hasCyberneticsCore == false && MacroController.buildBuilding(UnitType.Protoss_Cybernetics_Core) ) {
 				hasCyberneticsCore = true;
-			} else {
-				//MacroController.BuildBuilding(UnitType.Protoss_Gateway);
 			}
-	    	MacroController.BuildBuilding(UnitType.Protoss_Gateway);
 	    	
 	    	if(unitProductionFocus == UnitProduction.FocusOnWorkers)
 	    	{
 	    		// If the current strategy is focusing on training workers, do that first. 
-	        	MacroController.TrainWorkers();
-	        	MacroController.TrainArmy();
+	        	MacroController.trainWorkers();
+	        	MacroController.trainArmy();
 	    	} else 
 	    	{
 	    		// If the current strategy is focusing on training army, do that first. 
-	        	MacroController.TrainArmy();
-	        	MacroController.TrainWorkers();
+	        	MacroController.trainArmy();
+	        	MacroController.trainWorkers();
 	    	} 
 		} 
 		
 		// Save up to expand. 
 		if(techGoal == TechGoal.Nexus) {
-	    	MacroController.BuildBuilding(UnitType.Protoss_Nexus);
+			if(
+			    	MacroController.buildAtLocation(UnitType.Protoss_Nexus, MapTools.getNextExpansion())
+			    ) {
+				hasExpansion = true;
+				techGoal = TechGoal.DragoonTech;
+				Globals.game.printf("EXPANDING");
+				// Have to make a move and build function in order for this to work properly
+			}
 		}
     	
     	

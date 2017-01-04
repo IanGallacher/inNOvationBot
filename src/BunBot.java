@@ -19,7 +19,7 @@ public class BunBot extends DefaultBWListener {
         Globals.self = Globals.game.self();
         Globals.enemy = Globals.game.enemy();
         
-        Globals.game.setLocalSpeed(0);
+        Globals.game.setLocalSpeed(4);
         //Use BWTA to analyze map
         //This may take a few minutes if the map is processed first time!
         System.out.println("Analyzing map...");
@@ -28,7 +28,7 @@ public class BunBot extends DefaultBWListener {
         System.out.println("Map data ready");   
         
         
-        StrategyController.CalculateStrategy();
+        StrategyController.calculateStrategy();
         InformationManager.OnStart();
         Globals.BaseData.onStart();
     }
@@ -36,39 +36,46 @@ public class BunBot extends DefaultBWListener {
     // NOTE: NULL REFERENCE EXCEPTIONS CAUSE THIS TO FAIL
     @Override
     public void onFrame() {
-//    	System.out.println("GatherInformation");
-    	InformationManager.GatherInformation();
-    	
 //    	System.out.println("ExecuteStrategy");
-    	StrategyController.ExecuteStrategy();
+    	StrategyController.executeStrategy();
     	
 //    	System.out.println("ControllAllUnits");
-    	UnitController.ControllAllUnits();
+    	UnitController.controllAllUnits();
     	
     	// Debug data to draw
-    	DebugController.OnFrame(); // Be sure to clear the debug console.
-    	DebugController.DrawWorkerPaths();
-		MacroController.DebugVariables();
+    	DebugController.onFrame(); // Be sure to clear the debug console.
+    	DebugController.drawWorkerPaths();
+		MacroController.debugVariables();
 		InformationManager.writeToDebugConsole();
+		
+    	DebugController.drawMapInformation();
+    	Globals.BaseData.drawMapInformation();
+    	DebugController.drawHealthBars();
+    	//InformationManager.drawUnitInformation(425,30);
     }
     
     @Override
     public void onUnitCreate(Unit unit) {
-        System.out.println("Created " + unit.getType());
-        
+
+    	InformationManager.updateUnitData(unit);
     	MacroController.onUnitCreate(unit);
-    	InformationManager.onUnitCreate(unit);
-    	UnitController.put(unit.getID(), new UnitController(unit));
+    	if(unit.getPlayer() == Globals.self && unit.isCompleted())
+    		UnitController.put(unit.getID(), new UnitController(unit));
     }
     
     @Override
     public void onUnitComplete(Unit unit) {
+    	InformationManager.updateUnitData(unit);
+    	
 		MacroController.onUnitComplete(unit);
+    	if(unit.getPlayer() == Globals.self)
+    		UnitController.put(unit.getID(), new UnitController(unit));
     }
 
     @Override
     public void onUnitDestroy(Unit unit) {
     	InformationManager.onUnitDestroy(unit);
+	    UnitController.get(unit.getID()).stopTask();
     }
 
     public static void main(String[] args) {

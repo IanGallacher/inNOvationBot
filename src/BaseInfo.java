@@ -38,14 +38,10 @@ public class BaseInfo {
         }
     }
     
-    public void RemoveWorkerFromResource(Unit worker) {
-    	UnitController.get(worker.getID()).StopTask();
-    	// m.RemoveWorker(worker);
-    }
-    
-    
-    public MineralPatch FindOptimalMineralPatch(Unit worker)
+    public MineralPatch findOptimalMineralPatch(Unit worker)
     {                
+    	// TODO: Include if a mineral patch is being gathered from in this algorithm.
+    	
     	MineralPatch closestMineral = null;
 
     	int i = 1;
@@ -58,13 +54,13 @@ public class BaseInfo {
 	            closestMineral = mineral;
         	
         	// Most important criteria is to assign the SCV to the patch with the least amount of workers.
-        	if(mineral.CurrentWorkerCount() < closestMineral.CurrentWorkerCount()) 
+        	if(mineral.currentWorkerCount() < closestMineral.currentWorkerCount()) 
         	{
 	            closestMineral = mineral;
         	}
         	
         	// If there is the same amount of workers, put it on a closer one
-        	if(mineral.CurrentWorkerCount() < closestMineral.CurrentWorkerCount()
+        	if(mineral.currentWorkerCount() < closestMineral.currentWorkerCount()
         	&& mineral.getDistance(worker) < closestMineral.getDistance(worker))
         		closestMineral = mineral;
         }
@@ -75,8 +71,6 @@ public class BaseInfo {
     public boolean isFullySaturated() {
     	return false;
     }
-    
-    
 
 	public void drawMapInformation()
 	{
@@ -89,18 +83,10 @@ public class BaseInfo {
 		//for (Set<BaseLocation> const_iterator i = getBaseLocations().begin(); i != getBaseLocations().end(); i++)
 		BaseLocation i = BWTA.getNearestBaseLocation(Globals.self.getStartLocation());
 
-		//draw a circle at each mineral patch
+		// Draw the number of workers at a mineral patch.
 		for (MineralPatch m : this.MineralPatches)
 		{
-			Globals.game.drawCircleMap(m.getX(), m.getY(), 30, Color.Cyan);
-			Globals.game.drawTextMap(m.getX(), m.getY(), Integer.toString(m.CurrentWorkerCount()));
+			Globals.game.drawTextMap(m.getX(), m.getY(), Integer.toString(m.currentWorkerCount()));
 		}
-
-		//draw the outlines of vespene geysers
-//		for (Unit j : i.getGeysers())
-//		{
-//			TilePosition q = j.getInitialTilePosition();
-//			Globals.game.drawBoxMap(q.getX() * 32, q.getY() * 32, q.getX() * 32 + 4 * 32, q.getY() * 32 + 2 * 32, Color.Orange);
-//		}
 	}
 }

@@ -93,6 +93,15 @@ public class InformationManager {
 	    }
 	}
 	
+	
+	public static int getUnitCount(UnitType type, Player player)
+	{
+		return _playerUnitData.get(player).getNumUnits(type);
+	}
+	
+	
+	
+	
 	static void updateUnitData(Unit unit)
 	{
 	    if (!(unit.getPlayer() == Globals.self || unit.getPlayer() == Globals.enemy))
