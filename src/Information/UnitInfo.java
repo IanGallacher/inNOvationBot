@@ -1,3 +1,5 @@
+package Information;
+
 import bwapi.*;
 
 //Giving credit where credit is due. Much of this code was inspired by UAlbertaBot.

@@ -1,8 +1,15 @@
+package UnitController;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import bwapi.*;
 import bwta.BWTA;
+
+import Debug.DebugController;
+import Globals.Globals;
+import Information.InformationManager;
+import Macro.GasGeyser;
+import Macro.MineralPatch;
 
 public class UnitController {
 	// The static UnitController controlls ALL instances of UnitControllers. The
@@ -14,8 +21,11 @@ public class UnitController {
 
 	// TODO: Make the following private.
 	public static HashMap<Integer, UnitController> workers = new HashMap<Integer, UnitController>();
+	// TODO: Make the following private.
+	public static HashMap<Integer, UnitController> gasWorkers = new HashMap<Integer, UnitController>();
 
-	Unit thisUnit;
+	Unit _thisUnit;
+	public Unit getUnit() { return _thisUnit; }
 	
 	
 	
@@ -25,6 +35,8 @@ public class UnitController {
 	private TilePosition _buildingToBuildLocation;
 
 	public MineralPatch gatheringMineralPatch = null;
+	public GasGeyser gatheringGasGeyser = null;
+	
 	public int combatSquad = -1;
 	
 	private JobType _job = JobType.Idle;
@@ -45,9 +57,8 @@ public class UnitController {
 		for (UnitController unit : _unitController.values()) {
 
 			// if it's an idle worker that is not being trained, send it to the closest mineral patch
-			if (unit.getType().isWorker() && unit.getJob() == JobType.Idle && unit.thisUnit.isCompleted()) {
-				unit.assignToMinerals();
-				unit.gatherMinerals();
+			if (unit.getType().isWorker() && unit.getJob() == JobType.Idle && unit._thisUnit.isCompleted()) {
+				unit.assignToHarvest();
 			}
 
 			if (unit.getType() == UnitType.Protoss_Zealot && unit.combatSquad < 0) {
@@ -65,33 +76,54 @@ public class UnitController {
 
 	// Public functions for UnitController instances.
 	public UnitController(Unit unit) {
-		thisUnit = unit;
+		_thisUnit = unit;
 	}
 
 	public void assignToCombat() {
 		this._job = JobType.Combat;
 		CombatController.assignToSquad(this);
 	}
+	
+
+
+	public void assignToHarvest() {
+		assert _thisUnit.getType() == UnitType.Protoss_Probe;
+		if(gasWorkers.size() < 3 * InformationManager.getUnitCount(UnitType.Protoss_Assimilator))
+		{
+			this._job = JobType.GatherGas;
+			gatheringMineralPatch = Globals.BaseData.findOptimalAssimilator(_thisUnit);
+			gasWorkers.put(this._thisUnit.getID(), this);
+		} else {
+			this.assignToMinerals();
+			this.gatherMinerals();
+		}
+	}
 
 	public void assignToMinerals() {
 		this._job = JobType.GatherMinerals;
-		assert thisUnit.getType() == UnitType.Protoss_Probe;
-		gatheringMineralPatch = Globals.BaseData.findOptimalMineralPatch(thisUnit);
-		workers.put(this.thisUnit.getID(), this);
+		assert _thisUnit.getType() == UnitType.Protoss_Probe;
+		gatheringMineralPatch = Globals.BaseData.findOptimalMineralPatch(_thisUnit);
+		workers.put(this._thisUnit.getID(), this);
+	}
+
+	public void assignToGas() {
+		this._job = JobType.GatherGas;
+		gatheringMineralPatch = Globals.BaseData.findOptimalAssimilator(_thisUnit);
+		gasWorkers.put(this._thisUnit.getID(), this);
 	}
 	
 	private void buildBuilding() {
-		DebugController.debugConsolePrint("THING", this.thisUnit.isIdle());
-		if(this.thisUnit.isIdle()) 
+		DebugController.debugConsolePrint("THING", this._thisUnit.isIdle());
+		if(this._thisUnit.isIdle()) 
 		{
-			this.thisUnit.build(_buildingToBuild,_buildingToBuildLocation);
+			this._thisUnit.build(_buildingToBuild,_buildingToBuildLocation);
 			this.assignToMinerals();
 		}
 	}
 	
 	public void buildBuilding(UnitType building, TilePosition p) {
 		stopTask();
-		thisUnit.move(p.toPosition());
+		_thisUnit.move(p.toPosition());
 		this._buildingToBuild = building;
 		this._buildingToBuildLocation = p;
 		this._job = JobType.Build;
@@ -104,11 +136,26 @@ public class UnitController {
 		
 		// TODO: if unit.gettarget is not the same as the targetMineralPatch, do something about it.
 		if (this.gatheringMineralPatch == null) {
-			MineralPatch m = Globals.BaseData.findOptimalMineralPatch(thisUnit);
+			MineralPatch m = Globals.BaseData.findOptimalMineralPatch(_thisUnit);
 			this.gatheringMineralPatch = m;
-			m.assignWorker(thisUnit);
+			m.assignWorker(_thisUnit);
 		} else {
-			thisUnit.gather(UnitController.get(thisUnit.getID()).gatheringMineralPatch.mineralPatch);
+			_thisUnit.gather(UnitController.get(_thisUnit.getID()).gatheringMineralPatch.getMineralPatch());
+		}
+	}
+
+	public void gatherGas() {
+		// The mineralPatch assign unit function keeps track of how many units
+		// are mining. If the unit is already mining from patch, bypass that
+		// function.
+		
+		// TODO: if unit.gettarget is not the same as the targetMineralPatch, do something about it.
+		if (this.gatheringGasGeyser == null) {
+			MineralPatch m = Globals.BaseData.findOptimalAssimilator(_thisUnit);
+			this.gatheringMineralPatch = m;
+			m.assignWorker(_thisUnit);
+		} else {
+			_thisUnit.gather(UnitController.get(_thisUnit.getID()).gatheringGasGeyser.getAssimilator());
 		}
 	}
 
@@ -123,15 +170,15 @@ public class UnitController {
 	}
 
 	public UnitType getType() {
-		return thisUnit.getType();
+		return _thisUnit.getType();
 	}
 
 	public boolean isIdle() {
-		return thisUnit.isIdle();
+		return _thisUnit.isIdle();
 	}
 	
 	public boolean isTraining() {
-		return thisUnit.isTraining();
+		return _thisUnit.isTraining();
 	}
 	
 
@@ -185,7 +232,7 @@ public class UnitController {
 					// bwapi.UnitCommandType.Attack_Move, , 1, 4,4);
 					// unit.issueCommand(UnitCommanType.)
 				} else if (unit.isIdle()) {
-					Unit attackTarget = (Unit) InformationManager.EnemeyBuildings.values().toArray()[0];
+					Unit attackTarget = (Unit) InformationManager.getEnemeyBuildings().values().toArray()[0];
 					unit.attack(attackTarget.getPosition());
 					System.out.println("FINISH HIM");
 				}
@@ -214,7 +261,7 @@ public class UnitController {
 			if(_squadManager.get(currentSquadToAssignTroopsTo).isFull()) { currentSquadToAssignTroopsTo++; }
 			
 			
-			_squadManager.get(currentSquadToAssignTroopsTo).assignToSquad(unit.thisUnit);
+			_squadManager.get(currentSquadToAssignTroopsTo).assignToSquad(unit._thisUnit);
 		}
 
 		public static void removeFromSquad(UnitController unit) {
@@ -230,7 +277,7 @@ public class UnitController {
 //				}
 //			}
 
-			_squadManager.get(1).removeFromSquad(unit.thisUnit);
+			_squadManager.get(1).removeFromSquad(unit._thisUnit);
 		}
 		
 		public static void commandCombatUnits() {

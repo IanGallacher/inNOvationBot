@@ -1,12 +1,14 @@
+package UnitController;
+
 import java.util.Vector;
 
 import bwapi.*;
-
 import bwapi.TilePosition;
 import bwapi.Unit;
-//import bwapi.UnitType;
 import bwta.BaseLocation;
-//import bwta.BWTA;
+
+import Globals.Globals;
+import Information.InformationManager;
 
 
 // Giving credit where credit is due. Much of this code was inspired by UAlbertaBot.

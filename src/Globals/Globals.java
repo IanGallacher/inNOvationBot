@@ -1,8 +1,9 @@
+package Globals;
 import java.util.HashMap;
 
 import bwapi.Game;
 import bwapi.Player;
-import bwapi.Position;
+import Information.BaseInfo;
 
 public class Globals {
 

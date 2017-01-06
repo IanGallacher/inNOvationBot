@@ -1,3 +1,4 @@
+package Debug;
 // Giving credit where it is due: most of the map and health bar drawing functions have been ripped from UAlbertaBot
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,6 +13,9 @@ import bwapi.UnitType;
 import bwta.BWTA;
 import bwta.BaseLocation;
 import bwta.Chokepoint;
+
+import Globals.Globals;
+import UnitController.UnitController;
 
 public class DebugController {
 	private static int _debugConsoleYPosition = 0;
@@ -50,7 +54,7 @@ public class DebugController {
 			
 			Globals.game.drawLineMap
 				(
-					uc.thisUnit.getX(), uc.thisUnit.getY(), 
+					uc.getUnit().getX(), uc.getUnit().getY(), 
 					uc.gatheringMineralPatch.getX(), uc.gatheringMineralPatch.getY(), 
 					Color.Green
 				);

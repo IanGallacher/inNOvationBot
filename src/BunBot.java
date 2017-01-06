@@ -1,7 +1,11 @@
+import Macro.MacroController;
 import bwapi.*;
 
 import bwta.BWTA;
-
+import Debug.DebugController;
+import Globals.Globals;
+import Information.InformationManager;
+import UnitController.UnitController;
 
 // BunBot only supports Protoss, but there is code that mentions the other races scattered throughout the code. 
 // Hopefully that code saves someone time down the road when they refactor it to support different races. 
@@ -54,10 +58,12 @@ public class BunBot extends DefaultBWListener {
     	//InformationManager.drawUnitInformation(425,30);
     }
     
+    // NOTE: DOES NOT INCLUDE REFINERIES.
     @Override
     public void onUnitCreate(Unit unit) {
 
     	InformationManager.updateUnitData(unit);
+    	InformationManager.onUnitCreate(unit);
     	MacroController.onUnitCreate(unit);
     	if(unit.getPlayer() == Globals.self && unit.isCompleted())
     		UnitController.put(unit.getID(), new UnitController(unit));
@@ -77,7 +83,16 @@ public class BunBot extends DefaultBWListener {
     	InformationManager.onUnitDestroy(unit);
 	    UnitController.get(unit.getID()).stopTask();
     }
-
+    
+    // NOTE: THIS INCLUDES ASSIMILATORS/EXTRACTORS/REFINERIES
+    @Override
+    public void onUnitMorph(Unit unit) {
+    	// May not take into account lurkers.
+    	InformationManager.updateUnitData(unit);
+    	InformationManager.onUnitCreate(unit);
+    	if(unit.getPlayer() == Globals.self && unit.isCompleted())
+    		UnitController.put(unit.getID(), new UnitController(unit));
+    }
     public static void main(String[] args) {
         new BunBot().run();
     }

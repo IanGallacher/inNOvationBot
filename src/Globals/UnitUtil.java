@@ -1,3 +1,4 @@
+package Globals;
 // Again, giving credit where it is due. Almost the whole thing is copied & pasted from UAlbertaBot. 
 // https://github.com/davechurchill/ualbertabot/blob/master/UAlbertaBot/Source/UnitUtil.cpp
 

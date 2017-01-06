@@ -1,12 +1,14 @@
+package Macro;
 import bwapi.Unit;
 
 public class MineralPatch {
 	private int numberOfWorkers = 0;
-	Unit mineralPatch;
+	private Unit _mineralPatch;
+	public Unit getMineralPatch() { return _mineralPatch; }
 	// public float DistanceToBase;
 	
 	public MineralPatch(Unit m) {
-		this.mineralPatch = m;
+		this._mineralPatch = m;
 	}
 	
 	public int currentWorkerCount() {
@@ -15,7 +17,7 @@ public class MineralPatch {
 	
 	public void assignWorker(Unit worker) {
 		numberOfWorkers++;
-    	worker.gather(this.mineralPatch, false);
+    	worker.gather(this.getMineralPatch(), false);
 	}
 	
 	public void removeWorker() {
@@ -24,15 +26,15 @@ public class MineralPatch {
 
 	// Wrapper for the bwapi get distance function.
 	public int getDistance(Unit objectToMeasureDistanceWith) {
-		int d = this.mineralPatch.getDistance(objectToMeasureDistanceWith);
+		int d = this.getMineralPatch().getDistance(objectToMeasureDistanceWith);
 		return d;
 	}
 	
 	public int getX() {
-		return mineralPatch.getX();
+		return _mineralPatch.getX();
 	}
 	
 	public int getY() {
-		return mineralPatch.getY();
+		return _mineralPatch.getY();
 	}
 }

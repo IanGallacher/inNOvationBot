@@ -1,3 +1,4 @@
+package Information;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -12,6 +13,9 @@ import bwta.BaseLocation;
 import bwta.Chokepoint;
 import bwta.Polygon;
 
+import Debug.DebugController;
+import Globals.Globals;
+
 
 
 //Giving credit where credit is due. Much of this code was inspired by UAlbertaBot.
@@ -23,7 +27,8 @@ public class InformationManager {
 	static HashMap<Player, TilePosition>       _mainBaseLocations = new HashMap<Player, TilePosition>(); // Baselocations are where it makes sense to throw a base
 	static HashMap<Player, HashSet<bwta.Region> >  _occupiedRegions = new HashMap<Player, HashSet<bwta.Region>>(); // bwta.Region IS DIFFERENT from bwapi.Region
 	
-	static HashMap<Integer, Unit> EnemeyBuildings = new HashMap<Integer, Unit>();
+	private static HashMap<Integer, Unit> _enemeyBuildings = new HashMap<Integer, Unit>();
+	public static HashMap<Integer, Unit> getEnemeyBuildings() { return _enemeyBuildings; }
 
 	
 	public static void OnStart()
@@ -56,16 +61,16 @@ public class InformationManager {
 //		updateBuildingInfo();
 //	}
 	
-	static void writeToDebugConsole() {
-		int i = _playerUnitData.get(Globals.self).getNumUnits(UnitType.Protoss_Nexus);
-		DebugController.debugConsolePrint("Nexus", i);
+	public static void writeToDebugConsole() {
+		int i = _playerUnitData.get(Globals.self).getNumUnits(UnitType.Protoss_Assimilator);
+		DebugController.debugConsolePrint("Assimilator", i);
 	}
 
 	
 	
 	// Not strictly necessary because updateUnit gets called all the time. 
 	// However, this makes the code more reliable and readable. 
-	static void onUnitComplete(Unit unit) 
+	public static void onUnitCreate(Unit unit) 
 	{ 
 	    if (unit.getType().isNeutral())
 	    {
@@ -73,13 +78,9 @@ public class InformationManager {
 	    }
 	
 	    _playerUnitData.get(unit.getPlayer()).addUnit(unit);
-	    
-	    if(unit.getPlayer() == Globals.enemy && unit.getType().isBuilding()) {
-	    	EnemeyBuildings.remove(unit.getID());
-	    }
 	}
 	
-	static void onUnitDestroy(Unit unit) 
+	public static void onUnitDestroy(Unit unit) 
 	{ 
 	    if (unit.getType().isNeutral())
 	    {
@@ -89,10 +90,15 @@ public class InformationManager {
 	    _playerUnitData.get(unit.getPlayer()).removeUnit(unit);
 	    
 	    if(unit.getPlayer() == Globals.enemy && unit.getType().isBuilding()) {
-	    	EnemeyBuildings.remove(unit.getID());
+	    	getEnemeyBuildings().remove(unit.getID());
 	    }
 	}
 	
+	
+	public static int getUnitCount(UnitType type)
+	{
+		return getUnitCount(type, Globals.self);
+	}
 	
 	public static int getUnitCount(UnitType type, Player player)
 	{
@@ -102,7 +108,7 @@ public class InformationManager {
 	
 	
 	
-	static void updateUnitData(Unit unit)
+	public static void updateUnitData(Unit unit)
 	{
 	    if (!(unit.getPlayer() == Globals.self || unit.getPlayer() == Globals.enemy))
 	    {
@@ -116,8 +122,8 @@ public class InformationManager {
 	    updateKnownBaseInfo(unit) ;
 	    
 
-	    if(unit.getPlayer() == Globals.enemy && unit.getType().isBuilding() && EnemeyBuildings.containsKey(unit.getID()) == false) {
-	    	EnemeyBuildings.put(unit.getID(), unit);
+	    if(unit.getPlayer() == Globals.enemy && unit.getType().isBuilding() && getEnemeyBuildings().containsKey(unit.getID()) == false) {
+	    	getEnemeyBuildings().put(unit.getID(), unit);
 	    }
 	}
 	
@@ -264,7 +270,7 @@ public class InformationManager {
 		return _occupiedRegions.get(player);
 	}
 	
-	static TilePosition getMainBaseLocation(Player player) 
+	public static TilePosition getMainBaseLocation(Player player) 
 	{
 		return _mainBaseLocations.get(player);
 	}

@@ -1,4 +1,11 @@
+import Macro.MacroController;
 import bwapi.UnitType;
+
+import Globals.Globals;
+import Globals.MapTools;
+import Information.InformationManager;
+import UnitController.ScoutingController;
+import UnitController.UnitController;
 
 public class StrategyController {
 	
@@ -13,12 +20,6 @@ public class StrategyController {
 	private static UnitProduction unitProductionFocus = UnitProduction.FocusOnWorkers;
 	
 	
-	
-	static boolean hasGas;
-	static boolean hasCyberneticsCore;
-	static boolean hasExpansion;
-	
-	
 
 	public static void detectStrategy() {
 		
@@ -27,10 +28,6 @@ public class StrategyController {
 	public static void calculateStrategy() {
 		techGoal = TechGoal.DragoonTech;
 		unitProductionFocus = UnitProduction.FocusOnWorkers;
-		
-		hasGas = false;
-		hasCyberneticsCore = false;
-		hasExpansion = false;
 	}
 	
 	
@@ -50,18 +47,15 @@ public class StrategyController {
 			
 			// Mineral spending goals.
 			
-			if(UnitController.workers.size() > _workerGoalBeforeExpand && hasExpansion == false) {
+			if(UnitController.workers.size() > _workerGoalBeforeExpand *  InformationManager.getUnitCount(UnitType.Protoss_Nexus)) {
 				techGoal = TechGoal.Nexus;
 				System.out.printf("EXPANDING");
-			} else if(MacroController._number_of_gateways < 1 || hasCyberneticsCore == true) {
-				if(MacroController.buildBuilding(UnitType.Protoss_Gateway))
-				{
-					System.out.println("MADE GATEWAY YEAH YEAH YEAH");
-				}
-			} else if(hasGas == false && MacroController.buildBuilding(UnitType.Protoss_Assimilator)) {
-				hasGas = true;
-			} else if (hasCyberneticsCore == false && MacroController.buildBuilding(UnitType.Protoss_Cybernetics_Core) ) {
-				hasCyberneticsCore = true;
+			} else if(InformationManager.getUnitCount(UnitType.Protoss_Gateway) < 1 || InformationManager.getUnitCount(UnitType.Protoss_Cybernetics_Core) >= 1) {
+				MacroController.buildBuilding(UnitType.Protoss_Gateway);
+			} else if(InformationManager.getUnitCount(UnitType.Protoss_Assimilator) < 1) { 
+				MacroController.buildBuilding(UnitType.Protoss_Assimilator);
+			} else if (InformationManager.getUnitCount(UnitType.Protoss_Assimilator) < 1) {
+				MacroController.buildBuilding(UnitType.Protoss_Cybernetics_Core);
 			}
 	    	
 	    	if(unitProductionFocus == UnitProduction.FocusOnWorkers)
@@ -82,7 +76,6 @@ public class StrategyController {
 			if(
 			    	MacroController.buildAtLocation(UnitType.Protoss_Nexus, MapTools.getNextExpansion())
 			    ) {
-				hasExpansion = true;
 				techGoal = TechGoal.DragoonTech;
 				Globals.game.printf("EXPANDING");
 				// Have to make a move and build function in order for this to work properly

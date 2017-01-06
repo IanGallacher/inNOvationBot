@@ -1,3 +1,5 @@
+package Information;
+
 import java.util.HashMap;
 import java.util.Vector;
 
@@ -132,7 +134,12 @@ class PlayerUnitData
 			}
 			
 			public int getCount(UnitType ut) {
-				return _numUnits.get(ut);
+				if(_numUnits.containsKey(ut))
+					return _numUnits.get(ut);
+				else {
+					// If not a single one of the specified UnitTypes have been discovered/created, return 0.
+					return 0;
+				}
 			}
 	    }
 	}

@@ -1,7 +1,13 @@
+package Macro;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+//import BuildingPlacementController;
+import Debug.DebugController;
+import Globals.Globals;
+import Information.InformationManager;
+import UnitController.UnitController;
 import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
@@ -117,7 +123,7 @@ public class MacroController {
         	// TODO: Find the closest worker that can build the building. 
         	for (UnitController workerController : UnitController.workers.values()) 
         	{
-        		Unit worker = workerController.thisUnit;
+        		Unit worker = workerController.getUnit();
         		// If the worker is busy, find a different one
 				if (worker.isConstructing() == true) continue;
 				// Although this check should have already been called by now, 
@@ -187,6 +193,21 @@ public class MacroController {
     public static void trainArmy() {
         // iterate through my units
         for (Unit myUnit : Globals.self.getUnits()) {
+
+            
+            
+            if (myUnit.getType() == UnitType.Protoss_Gateway 
+            		&& myUnit.getTrainingQueue().isEmpty() 
+            		&& myUnit.isBeingConstructed() == false &&
+            		Globals.self.supplyTotal() > Globals.self.supplyUsed() 
+            		&& Globals.self.minerals() - _planned_minerals >= UnitType.Protoss_Dragoon.mineralPrice()
+            		&& Globals.self.gas() >= UnitType.Protoss_Dragoon.gasPrice()) {
+            	trainUnit(myUnit, UnitType.Protoss_Dragoon);
+                
+                bwta.Region r = BWTA.getRegion(Globals.self.getStartLocation().toPosition());
+                myUnit.setRallyPoint(r.getChokepoints().get(0).getCenter());
+            }
+            
             
             if (myUnit.getType() == UnitType.Protoss_Gateway 
             		&& myUnit.getTrainingQueue().isEmpty() 

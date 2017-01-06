@@ -1,6 +1,10 @@
+package Macro;
+
 import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
+
+import Globals.Globals;
 
 public class BuildingPlacementController {
 	

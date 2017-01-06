@@ -1,3 +1,4 @@
+package Globals;
 import java.util.HashMap;
 import java.util.Vector;
 

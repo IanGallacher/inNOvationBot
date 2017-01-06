@@ -1,7 +1,11 @@
+package Information;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import Macro.GasGeyser;
+import Macro.MineralPatch;
 import bwapi.Color;
 import bwapi.Position;
 import bwapi.TilePosition;
@@ -10,12 +14,17 @@ import bwta.BWTA;
 import bwta.BaseLocation;
 import bwta.Chokepoint;
 
+import Globals.Globals;
+
 
 // Accessed from global by giving a position.
 public class BaseInfo {
 	public ArrayList<MineralPatch> MineralPatches = new ArrayList<MineralPatch>();
+	public ArrayList<GasGeyser> gasGeysers = new ArrayList<GasGeyser>();
 
+	// Number of workers is total workers, including those on gas. 
 	private int _numberOfWorkers = 0;
+	private int _workersOnGas = 0;
 	
 // Access the map data by doing BaseInfo.BaseData
     
@@ -31,11 +40,18 @@ public class BaseInfo {
     public void onStart()
     {
         //for (Unit neutralUnit : Globals.game.neutral().getUnits()) {
-    	for(Unit neutralUnit : BWTA.getNearestBaseLocation(Globals.self.getStartLocation()).getMinerals()) {
-            if (neutralUnit.getType().isMineralField()) {
-        		MineralPatches.add( new MineralPatch(neutralUnit) );
+    	for(Unit mineralPatch : BWTA.getNearestBaseLocation(Globals.self.getStartLocation()).getMinerals()) {
+            if (mineralPatch.getType().isMineralField()) {
+        		MineralPatches.add( new MineralPatch(mineralPatch) );
             }
         }
+
+    	for(Unit gasGyser : BWTA.getNearestBaseLocation(Globals.self.getStartLocation()).getGeysers()) {
+            if (gasGyser.getType().isRefinery()) {
+            	gasGeysers.add( new GasGeyser(gasGyser) );
+            }
+        }
+    	
     }
     
     public MineralPatch findOptimalMineralPatch(Unit worker)
@@ -67,6 +83,36 @@ public class BaseInfo {
         
         return closestMineral;
     }
+    
+    public MineralPatch findOptimalAssimilator(Unit worker)
+    {                
+    	// TODO: Include if a mineral patch is being gathered from in this algorithm.
+    	
+    	MineralPatch closestMineral = null;
+
+        for( MineralPatch mineral : this.MineralPatches ) {
+        	
+        	// Yes, these can be condensed into a big if statement. However, I believe the following is more readable.
+        	
+        	// if there is no mineral marked the closest, mark it as the closest. 
+        	if(closestMineral == null) 
+	            closestMineral = mineral;
+        	
+        	// Most important criteria is to assign the SCV to the patch with the least amount of workers.
+        	if(mineral.currentWorkerCount() < closestMineral.currentWorkerCount()) 
+        	{
+	            closestMineral = mineral;
+        	}
+        	
+        	// If there is the same amount of workers, put it on a closer one
+        	if(mineral.currentWorkerCount() < closestMineral.currentWorkerCount()
+        	&& mineral.getDistance(worker) < closestMineral.getDistance(worker))
+        		closestMineral = mineral;
+        }
+        
+        return closestMineral;
+    }
+    
     
     public boolean isFullySaturated() {
     	return false;
