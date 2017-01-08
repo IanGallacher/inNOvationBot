@@ -2,56 +2,75 @@ package Information;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 import Macro.GasGeyser;
 import Macro.MineralPatch;
-import bwapi.Color;
-import bwapi.Position;
+import UnitController.UnitController;
 import bwapi.TilePosition;
 import bwapi.Unit;
+import bwapi.UnitType;
 import bwta.BWTA;
 import bwta.BaseLocation;
-import bwta.Chokepoint;
 
 import Globals.Globals;
+import Globals.Utility;
 
 
 // Accessed from global by giving a position.
-public class BaseInfo {
+public class BaseInfo {    
+	
 	public ArrayList<MineralPatch> MineralPatches = new ArrayList<MineralPatch>();
 	public ArrayList<GasGeyser> gasGeysers = new ArrayList<GasGeyser>();
+	
+	public TilePosition Location = null; // gets assigned in constructor.
 
+	
+	
+
+	// TODO: Make the following private.
+	public HashMap<Integer, UnitController> mineralWorkers = new HashMap<Integer, UnitController>();
+	public HashMap<Integer, UnitController> gasWorkers = new HashMap<Integer, UnitController>();
+	
 	// Number of workers is total workers, including those on gas. 
 	private int _numberOfWorkers = 0;
-	private int _workersOnGas = 0;
+	public int getWorkersOnMineralsCount() { return _numberOfWorkers - getWorkersOnGasCount(); };
+	public int getWorkersOnGasCount() { return gasWorkers.size(); };
 	
-// Access the map data by doing BaseInfo.BaseData
-    
-    public BaseInfo(/*bwta.BaseLocation b*/) {
-    	
-    	// Eventually sort by distance to assigned base.
-//    	for( Unit mineral : b.getMinerals() )
-//    	{
-//    		MineralPatches.add( new MineralPatch(mineral) );
-//    	}
-    }
-    
-    public void onStart()
+	
+    public BaseInfo(TilePosition baseLocation)
     {
-        //for (Unit neutralUnit : Globals.game.neutral().getUnits()) {
-    	for(Unit mineralPatch : BWTA.getNearestBaseLocation(Globals.self.getStartLocation()).getMinerals()) {
+    	this.Location = baseLocation;
+
+    	// Eventually sort by distance to assigned base.
+//    	for( bwta.BaseLocation b : BWTA.getBaseLocations() )
+//    	{
+//    		b.getMinerals().sort(c);;    		
+//    	}
+    	
+    	for(Unit mineralPatch : BWTA.getNearestBaseLocation(baseLocation).getMinerals()) {
             if (mineralPatch.getType().isMineralField()) {
         		MineralPatches.add( new MineralPatch(mineralPatch) );
             }
         }
 
-    	for(Unit gasGyser : BWTA.getNearestBaseLocation(Globals.self.getStartLocation()).getGeysers()) {
-            if (gasGyser.getType().isRefinery()) {
+    	for(Unit gasGyser : BWTA.getNearestBaseLocation(baseLocation).getGeysers()) {
+            if (gasGyser.getType() == UnitType.Resource_Vespene_Geyser) {
             	gasGeysers.add( new GasGeyser(gasGyser) );
             }
         }
+    }
+    
+    public boolean closerThan(TilePosition t, BaseInfo compareLocation) {
+    	int thisX = this.Location.getX();
+    	int thisY = this.Location.getY();
+    	double ourDistance = Utility.distance(thisX, thisY, t.getX(), t.getY());
     	
+    	int theirX = compareLocation.Location.getX();
+    	int theirY = compareLocation.Location.getY();
+    	double theirDistance = Utility.distance(theirX, theirY, t.getX(), t.getY());
+    	
+    	if(ourDistance < theirDistance) return true;
+    	else return false;
     }
     
     public MineralPatch findOptimalMineralPatch(Unit worker)
@@ -84,33 +103,33 @@ public class BaseInfo {
         return closestMineral;
     }
     
-    public MineralPatch findOptimalAssimilator(Unit worker)
+    public GasGeyser findOptimalAssimilator(Unit worker)
     {                
     	// TODO: Include if a mineral patch is being gathered from in this algorithm.
     	
-    	MineralPatch closestMineral = null;
+    	GasGeyser closestGeyser = null;
 
-        for( MineralPatch mineral : this.MineralPatches ) {
+        for( GasGeyser geyser : this.gasGeysers ) {
         	
         	// Yes, these can be condensed into a big if statement. However, I believe the following is more readable.
         	
         	// if there is no mineral marked the closest, mark it as the closest. 
-        	if(closestMineral == null) 
-	            closestMineral = mineral;
+        	if(closestGeyser == null) 
+	            closestGeyser = geyser;
         	
         	// Most important criteria is to assign the SCV to the patch with the least amount of workers.
-        	if(mineral.currentWorkerCount() < closestMineral.currentWorkerCount()) 
+        	if(geyser.currentWorkerCount() < closestGeyser.currentWorkerCount()) 
         	{
-	            closestMineral = mineral;
+	            closestGeyser = geyser;
         	}
         	
         	// If there is the same amount of workers, put it on a closer one
-        	if(mineral.currentWorkerCount() < closestMineral.currentWorkerCount()
-        	&& mineral.getDistance(worker) < closestMineral.getDistance(worker))
-        		closestMineral = mineral;
+        	if(geyser.currentWorkerCount() < closestGeyser.currentWorkerCount()
+        	&& geyser.getDistance(worker) < closestGeyser.getDistance(worker))
+        		closestGeyser = geyser;
         }
         
-        return closestMineral;
+        return closestGeyser;
     }
     
     

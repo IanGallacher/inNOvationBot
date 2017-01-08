@@ -65,7 +65,7 @@ public class ScoutingController {
         System.out.println("set scout");
         
 	    _workerScout = unit;
-	    UnitController.get(unit.getID()).stopTask();
+	    UnitManager.get(unit.getID()).stopTask();
 //	    WorkerManager::Instance().setScoutWorker(_workerScout);
 	}
 	

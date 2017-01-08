@@ -11,14 +11,5 @@ public class Globals {
 
     public static Player self;
     public static Player enemy;
-    
-    //public static HashMap<Position, bwta.BaseLocation> BaseData = new HashMap<Position,bwta.BaseLocation>();
 
-    public static BaseInfo BaseData = new BaseInfo();
-
-	
-//	for( bwta.BaseLocation b : BWTA.getBaseLocations() )
-//	{
-//		b.getMinerals().sort(c);;    		
-//	}
 }

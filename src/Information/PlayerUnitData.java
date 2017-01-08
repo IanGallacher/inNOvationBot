@@ -55,6 +55,12 @@ class PlayerUnitData
 		    // The unit has never been seen before. 
 		    if (this.UnitData.containsKey(unit.getID()) == false)
 		    {
+		    	if(unit.getPlayer() == Globals.Globals.enemy)
+		    	{
+		    		System.out.println("ENEMEY BUILDING");
+		    	}
+		    	
+		    	
 			    // Make sure there is not going to be a null reference exception down the line.
 		        this.UnitData.put(unit.getID(), new UnitInfo());
 		        
@@ -75,7 +81,7 @@ class PlayerUnitData
 			ui.type         = unit.getType();
 		    ui.completed    = unit.isCompleted();
 		    
-	        this.UnitData.put(unit.getID(), new UnitInfo());
+	        this.UnitData.put(unit.getID(), ui);
 	    }
 
 	    public void addUnit(Unit unit) {	

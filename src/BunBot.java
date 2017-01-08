@@ -6,6 +6,7 @@ import Debug.DebugController;
 import Globals.Globals;
 import Information.InformationManager;
 import UnitController.UnitController;
+import UnitController.UnitManager;
 
 // BunBot only supports Protoss, but there is code that mentions the other races scattered throughout the code. 
 // Hopefully that code saves someone time down the road when they refactor it to support different races. 
@@ -23,7 +24,7 @@ public class BunBot extends DefaultBWListener {
         Globals.self = Globals.game.self();
         Globals.enemy = Globals.game.enemy();
         
-        Globals.game.setLocalSpeed(4);
+        Globals.game.setLocalSpeed(5);
         //Use BWTA to analyze map
         //This may take a few minutes if the map is processed first time!
         System.out.println("Analyzing map...");
@@ -34,7 +35,6 @@ public class BunBot extends DefaultBWListener {
         
         StrategyController.calculateStrategy();
         InformationManager.OnStart();
-        Globals.BaseData.onStart();
     }
     
     // NOTE: NULL REFERENCE EXCEPTIONS CAUSE THIS TO FAIL
@@ -44,16 +44,20 @@ public class BunBot extends DefaultBWListener {
     	StrategyController.executeStrategy();
     	
 //    	System.out.println("ControllAllUnits");
-    	UnitController.controllAllUnits();
+    	UnitManager.controllAllUnits();
     	
     	// Debug data to draw
     	DebugController.onFrame(); // Be sure to clear the debug console.
-    	DebugController.drawWorkerPaths();
+    	//DebugController.drawWorkerPaths();
 		MacroController.debugVariables();
+    	StrategyController.debugVariables();
 		InformationManager.writeToDebugConsole();
 		
     	DebugController.drawMapInformation();
-    	Globals.BaseData.drawMapInformation();
+    	
+    	// BaseData is no longer a singleton representing the current players main base. 
+    	// Instead it is replaced with an arrayList called _allBases.
+    	//Globals.BaseData.drawMapInformation(); 
     	DebugController.drawHealthBars();
     	//InformationManager.drawUnitInformation(425,30);
     }
@@ -61,12 +65,11 @@ public class BunBot extends DefaultBWListener {
     // NOTE: DOES NOT INCLUDE REFINERIES.
     @Override
     public void onUnitCreate(Unit unit) {
-
     	InformationManager.updateUnitData(unit);
     	InformationManager.onUnitCreate(unit);
     	MacroController.onUnitCreate(unit);
     	if(unit.getPlayer() == Globals.self && unit.isCompleted())
-    		UnitController.put(unit.getID(), new UnitController(unit));
+    		UnitManager.put(unit.getID(), new UnitController(unit));
     }
     
     @Override
@@ -75,13 +78,19 @@ public class BunBot extends DefaultBWListener {
     	
 		MacroController.onUnitComplete(unit);
     	if(unit.getPlayer() == Globals.self)
-    		UnitController.put(unit.getID(), new UnitController(unit));
+    		UnitManager.put(unit.getID(), new UnitController(unit));
+    }   
+    
+    // Overlaps a bit with onUnitCreate, because we can discover our own units.
+    @Override
+    public void onUnitDiscover(Unit unit) {
+    	InformationManager.updateUnitData(unit);
     }
 
     @Override
     public void onUnitDestroy(Unit unit) {
     	InformationManager.onUnitDestroy(unit);
-	    UnitController.get(unit.getID()).stopTask();
+	    UnitManager.get(unit.getID()).stopTask();
     }
     
     // NOTE: THIS INCLUDES ASSIMILATORS/EXTRACTORS/REFINERIES
@@ -90,8 +99,11 @@ public class BunBot extends DefaultBWListener {
     	// May not take into account lurkers.
     	InformationManager.updateUnitData(unit);
     	InformationManager.onUnitCreate(unit);
+    	
+    	// If an assimilator has been constructed, tell the macro controller to stop planning for that mineral expenditure.
+    	MacroController.onUnitCreate(unit);
     	if(unit.getPlayer() == Globals.self && unit.isCompleted())
-    		UnitController.put(unit.getID(), new UnitController(unit));
+    		UnitManager.put(unit.getID(), new UnitController(unit));
     }
     public static void main(String[] args) {
         new BunBot().run();

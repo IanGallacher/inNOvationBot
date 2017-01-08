@@ -8,6 +8,7 @@ import Debug.DebugController;
 import Globals.Globals;
 import Information.InformationManager;
 import UnitController.UnitController;
+import UnitController.UnitManager;
 import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
@@ -15,7 +16,9 @@ import bwta.BWTA;
 
 
 public class MacroController {
-    private static int _planned_production = 10; // start at 8 to account for the four scv's that spawn.
+	// We used to compare only against things that are planned on being made
+	// We now compare against total supply. This line of code may come back again in a future version.
+    private static int _planned_production = 8; // start at 8 to account for the four probes that spawn.
     
     // The game starts by creating a Nexus. OnUnitCreate will get called, and our engine will think that we are planning to spend 400 minerals to build a Nexus.
     // In order to start the game with 0 planned minerals, account for the 400 minerals that the nexus will require. 
@@ -29,13 +32,13 @@ public class MacroController {
 
     public static void debugVariables() {
 //    	DebugController.debugConsolePrint("planned_production", _planned_production);
-//    	DebugController.debugConsolePrint("planned_minerals", _planned_minerals);
+    	DebugController.debugConsolePrint("planned_minerals", _planned_minerals);
 //    	DebugController.debugConsolePrint("planned_supply_depots", _planned_supply_depots);
 //    	DebugController.debugConsolePrint("Production Capacity", productionCapacity());
     	
-    	DebugController.debugConsolePrint("_number_of_gateways", _number_of_gateways);
-    	DebugController.debugConsolePrint("_number_of_nexus", _number_of_nexus);
-    	DebugController.debugConsolePrint("UnitController.workers.size()", UnitController.workers.size());
+//    	DebugController.debugConsolePrint("_number_of_gateways", _number_of_gateways);
+//    	DebugController.debugConsolePrint("_number_of_nexus", _number_of_nexus);
+    	//DebugController.debugConsolePrint("UnitController.workers.size()", UnitManager.mineralWorkers.size());
     	
     //	DebugController.debugConsolePrint("GREATER", Globals.self.supplyUsed() + productionCapacity() );
     //	DebugController.debugConsolePrint("LESSER", Globals.self.supplyTotal() + ( _planned_supply_depots * UnitType.Protoss_Pylon.supplyProvided() ));
@@ -121,7 +124,7 @@ public class MacroController {
         if (Globals.self.minerals()-_planned_minerals >= building.mineralPrice()) {
         	// Look for workers that can build our building. 
         	// TODO: Find the closest worker that can build the building. 
-        	for (UnitController workerController : UnitController.workers.values()) 
+        	for (UnitController workerController : UnitManager.mineralWorkers.values()) 
         	{
         		Unit worker = workerController.getUnit();
         		// If the worker is busy, find a different one
@@ -164,8 +167,20 @@ public class MacroController {
         }
     }
     
+    public static boolean canTrainUnit(Unit building, UnitType unitToTrain) {
+    	return 
+    		(
+    		building.canTrain(unitToTrain)
+    		&& building.getTrainingQueue().isEmpty() // Don't waste money by queueing up units.
+    		&& building.isBeingConstructed() == false 
+    		&& Globals.self.supplyTotal() > Globals.self.supplyUsed()  // Is there enough supply?
+    		&& Globals.self.minerals() - _planned_minerals >= unitToTrain.mineralPrice()
+    	    && Globals.self.gas() >= unitToTrain.gasPrice()
+    		);
+    }
+    
     private static void trainUnit(Unit building, UnitType unitToTrain) {
-        if(building.train(unitToTrain))
+        if(building.train(unitToTrain)) 
         { 
         	_planned_production += unitToTrain.supplyRequired();
         }
@@ -174,18 +189,14 @@ public class MacroController {
     // Trains a worker at all command centers.
     public static void trainWorkers() {
         // iterate through my units
-        for (Unit myUnit : Globals.self.getUnits()) {
+        for (Unit potentialBuilding : Globals.self.getUnits()) {
         	
             // if there's enough minerals, train an SCV
-            if (myUnit.getType() == UnitType.Protoss_Nexus 
-            		&& myUnit.getTrainingQueue().isEmpty() 
-            		&& myUnit.isBeingConstructed() == false 
-            		&& Globals.self.supplyTotal() > Globals.self.supplyUsed() 
-            		&& Globals.self.minerals() - _planned_minerals >= UnitType.Protoss_Probe.mineralPrice()
-            		&& UnitController.workers.size() <= 21 * InformationManager.getUnitCount(UnitType.Protoss_Nexus, Globals.self)
-            	) 
+            if (canTrainUnit(potentialBuilding, UnitType.Protoss_Probe )
+    		&& InformationManager.getUnitCount(UnitType.Protoss_Probe) <= 22 * InformationManager.getUnitCount(UnitType.Protoss_Nexus)
+               ) 
             {
-            	trainUnit(myUnit, UnitType.Protoss_Probe);
+            	trainUnit(potentialBuilding, UnitType.Protoss_Probe);
             }
         }
     }
@@ -197,28 +208,30 @@ public class MacroController {
             
             
             if (myUnit.getType() == UnitType.Protoss_Gateway 
-            		&& myUnit.getTrainingQueue().isEmpty() 
-            		&& myUnit.isBeingConstructed() == false &&
-            		Globals.self.supplyTotal() > Globals.self.supplyUsed() 
-            		&& Globals.self.minerals() - _planned_minerals >= UnitType.Protoss_Dragoon.mineralPrice()
-            		&& Globals.self.gas() >= UnitType.Protoss_Dragoon.gasPrice()) {
+    		&& myUnit.getTrainingQueue().isEmpty() 
+    		&& myUnit.isBeingConstructed() == false
+    		&& Globals.self.supplyTotal() > Globals.self.supplyUsed() 
+    		&& Globals.self.minerals() - _planned_minerals >= UnitType.Protoss_Dragoon.mineralPrice()
+    		&& Globals.self.gas() >= UnitType.Protoss_Dragoon.gasPrice()
+    		&& InformationManager.getUnitCount(UnitType.Protoss_Cybernetics_Core) >= 1) 
+            {
             	trainUnit(myUnit, UnitType.Protoss_Dragoon);
                 
                 bwta.Region r = BWTA.getRegion(Globals.self.getStartLocation().toPosition());
-                myUnit.setRallyPoint(r.getChokepoints().get(0).getCenter());
+               // myUnit.setRallyPoint(r.getChokepoints().get(0).getCenter());
             }
             
             
-            if (myUnit.getType() == UnitType.Protoss_Gateway 
-            		&& myUnit.getTrainingQueue().isEmpty() 
-            		&& myUnit.isBeingConstructed() == false &&
-            		Globals.self.supplyTotal() > Globals.self.supplyUsed() 
-            		&& Globals.self.minerals() - _planned_minerals >= UnitType.Protoss_Zealot.mineralPrice()) {
-            	trainUnit(myUnit, UnitType.Protoss_Zealot);
-                
-                bwta.Region r = BWTA.getRegion(Globals.self.getStartLocation().toPosition());
-                myUnit.setRallyPoint(r.getChokepoints().get(0).getCenter());
-            }
+//            if (myUnit.getType() == UnitType.Protoss_Gateway 
+//            		&& myUnit.getTrainingQueue().isEmpty() 
+//            		&& myUnit.isBeingConstructed() == false &&
+//            		Globals.self.supplyTotal() > Globals.self.supplyUsed() 
+//            		&& Globals.self.minerals() - _planned_minerals >= UnitType.Protoss_Zealot.mineralPrice()) {
+//            	trainUnit(myUnit, UnitType.Protoss_Zealot);
+//                
+//                bwta.Region r = BWTA.getRegion(Globals.self.getStartLocation().toPosition());
+//                myUnit.setRallyPoint(r.getChokepoints().get(0).getCenter());
+//            }
         }
     }
     
@@ -232,15 +245,5 @@ public class MacroController {
     public static int productionCapacity() { 
     	// Probes take take up twice as much supply as usual because two can finish before a pylon is done.
     	return (4 * _number_of_nexus) + (4 * _number_of_gateways);
-    }
-    
-    // Terran has to send workers to complete buildings if the construction worker is killed.
-    private static void assignJobsToIdleWorkers() {
-    	finishIncompleteStructures();
-    }
-    
-    private static void finishIncompleteStructures()
-    {
-    	
     }
 }

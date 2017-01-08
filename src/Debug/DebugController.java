@@ -15,7 +15,7 @@ import bwta.BaseLocation;
 import bwta.Chokepoint;
 
 import Globals.Globals;
-import UnitController.UnitController;
+import UnitController.UnitManager;
 
 public class DebugController {
 	private static int _debugConsoleYPosition = 0;
@@ -47,19 +47,19 @@ public class DebugController {
     	_debugConsoleYPosition++;
 	}
 	
-	public static void drawWorkerPaths() {
-		for(UnitController uc : UnitController.workers.values()) 
-		{
-			if(uc.getJob() != UnitController.JobType.GatherMinerals) continue;
-			
-			Globals.game.drawLineMap
-				(
-					uc.getUnit().getX(), uc.getUnit().getY(), 
-					uc.gatheringMineralPatch.getX(), uc.gatheringMineralPatch.getY(), 
-					Color.Green
-				);
-		}
-	}
+//	public static void drawWorkerPaths() {
+//		for(UnitManager uc : UnitManager.mineralWorkers.values()) 
+//		{
+//			if(uc.getJob() != UnitManager.JobType.GatherMinerals) continue;
+//			
+//			Globals.game.drawLineMap
+//				(
+//					uc.getUnit().getX(), uc.getUnit().getY(), 
+//					uc.gatheringMineralPatch.getX(), uc.gatheringMineralPatch.getY(), 
+//					Color.Green
+//				);
+//		}
+//	}
 
 	public static void drawHealthBars()
 	{
@@ -79,7 +79,6 @@ public class DebugController {
 	        int left    = pos.getX() - unit.getType().dimensionLeft();
 	        int right   = pos.getX() + unit.getType().dimensionRight();
 	        int top     = pos.getY() - unit.getType().dimensionUp();
-	        int bottom  = pos.getY() + unit.getType().dimensionDown();
 	
 	        //Globals.game.drawBoxMap(Position(left, top), Position(right, bottom), Colors::Grey, false);
 	
@@ -139,7 +138,6 @@ public class DebugController {
 	        int left    = pos.getX() - unit.getType().dimensionLeft();
 	        int right   = pos.getX() + unit.getType().dimensionRight();
 	        int top     = pos.getY() - unit.getType().dimensionUp();
-	        int bottom  = pos.getY() + unit.getType().dimensionDown();
 	        
 	        if (unit.getType().isResourceContainer() && unit.getInitialResources() > 0)
 	        {

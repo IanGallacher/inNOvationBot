@@ -1,5 +1,6 @@
 package Information;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -17,15 +18,17 @@ import Debug.DebugController;
 import Globals.Globals;
 
 
-
 //Giving credit where credit is due. Much of this code was inspired by UAlbertaBot.
 //https://github.com/davechurchill/ualbertabot/blob/master/UAlbertaBot/Source/InformationManager.cpp
 public class InformationManager {
-
-
-	static HashMap<Player, PlayerUnitData> _playerUnitData = new HashMap<Player, PlayerUnitData>(); // a set of unit data that contains a set of unit info for each player
-	static HashMap<Player, TilePosition>       _mainBaseLocations = new HashMap<Player, TilePosition>(); // Baselocations are where it makes sense to throw a base
-	static HashMap<Player, HashSet<bwta.Region> >  _occupiedRegions = new HashMap<Player, HashSet<bwta.Region>>(); // bwta.Region IS DIFFERENT from bwapi.Region
+	static HashMap<Player, PlayerUnitData> _playerUnitData; // a set of unit data that contains a set of unit info for each player
+	
+	
+	static ArrayList<BaseInfo> _allBases; // Baselocations are where it makes sense to throw a base
+	static HashMap<Player, TilePosition> _mainBaseLocations; // Baselocations are where it makes sense to throw a base
+	
+	
+	static HashMap<Player, HashSet<bwta.Region> > _occupiedRegions; // bwta.Region IS DIFFERENT from bwapi.Region
 	
 	private static HashMap<Integer, Unit> _enemeyBuildings = new HashMap<Integer, Unit>();
 	public static HashMap<Integer, Unit> getEnemeyBuildings() { return _enemeyBuildings; }
@@ -36,6 +39,13 @@ public class InformationManager {
 		_playerUnitData = new HashMap<Player, PlayerUnitData>(); // a set of unit data that contains a set of unit info for each player
 		_playerUnitData.put(Globals.self, new PlayerUnitData());
 		_playerUnitData.put(Globals.enemy, new PlayerUnitData());
+
+		
+		_allBases = new ArrayList<BaseInfo>(); // Baselocations are where it makes sense to throw a base
+		for(BaseLocation b : BWTA.getBaseLocations()) {
+			_allBases.add(new BaseInfo(b.getTilePosition()));
+		}
+		
 		
 		_mainBaseLocations = new HashMap<Player, TilePosition>(); // Baselocations are where it makes sense to throw a base
 		
@@ -54,12 +64,6 @@ public class InformationManager {
 		_occupiedRegions.put(Globals.self, new HashSet<bwta.Region>());
 		_occupiedRegions.put(Globals.enemy, new HashSet<bwta.Region>());
 	}
-	
-//	public static void GatherInformation() 
-//	{
-//		updateUnitInfo();
-//		updateBuildingInfo();
-//	}
 	
 	public static void writeToDebugConsole() {
 		int i = _playerUnitData.get(Globals.self).getNumUnits(UnitType.Protoss_Assimilator);
@@ -94,6 +98,19 @@ public class InformationManager {
 	    }
 	}
 	
+	public static ArrayList<BaseInfo> getBaseData() {
+		return _allBases;
+	}
+	
+	// assume we are talking about the player the AI is controlling.
+	public static BaseInfo getClosestUnsaturatedBase(Position p) {
+		BaseInfo closestBase = null;
+		for(BaseInfo bi : _allBases) {
+			if(closestBase == null) closestBase = bi;
+			if(bi.closerThan(p.toTilePosition(), closestBase)) closestBase = bi;
+		}
+		return closestBase;
+	}
 	
 	public static int getUnitCount(UnitType type)
 	{
@@ -185,6 +202,7 @@ public class InformationManager {
 		if (_mainBaseLocations.containsKey(Globals.enemy) == false) 
 		{ 
 			// how many start locations have we explored
+			// If there is only one start location left to explore, we automatically know where the enemy base is.
 			int exploredStartLocations = 0;
 			boolean mainBaseFound = false;
 	
@@ -251,11 +269,14 @@ public class InformationManager {
 			return false;
 		}
 
+		
+		
 		for (UnitInfo unitInfo : _playerUnitData.get(Globals.enemy).UnitData.values())
 		{
 			if (unitInfo.type.isBuilding()) 
 			{
-				if (BWTA.getRegion(unitInfo.lastPosition) == region) 
+				bwta.Region r = BWTA.getRegion(unitInfo.lastPosition);
+				if (r == region) 
 				{
 					return true;
 				}

@@ -32,14 +32,16 @@ public class BuildingPlacementController {
     			for (int j=aroundTile.getY()-maxDist; j<=aroundTile.getY()+maxDist; j++) {
     				if (Globals.game.canBuildHere(new TilePosition(i,j), buildingType)) {
     					// units that are blocking the tile
-//    					boolean unitsInWay = false;
-//    					for (Unit u : Globals.game.getAllUnits()) {
-//    						if (u.getID() == builder.getID()) continue;
-//    						if ((Math.abs(u.getTilePosition().getX()-i) < 4) && (Math.abs(u.getTilePosition().getY()-j) < 4)) unitsInWay = true;
-//    					}
-//    					if (!unitsInWay) {
+    					boolean unitsInWay = false;
+    					for (Unit u : Globals.game.getAllUnits()) {
+    						// if (u.getID() == builder.getID()) continue;
+    						
+    						// Place buildings far enough away from other buildings.
+    						if ((Math.abs(u.getTilePosition().getX()-i) < 4) && (Math.abs(u.getTilePosition().getY()-j) < 4)) unitsInWay = true;
+    					}
+    					if (!unitsInWay) {
     						return new TilePosition(i, j);
-//    					}
+    					}
     				}
     			}
     		}
