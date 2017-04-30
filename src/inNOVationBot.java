@@ -10,7 +10,7 @@ import UnitController.UnitManager;
 
 // BunBot only supports Protoss, but there is code that mentions the other races scattered throughout the code. 
 // Hopefully that code saves someone time down the road when they refactor it to support different races. 
-public class BunBot extends DefaultBWListener {
+public class inNOVationBot extends DefaultBWListener {
 
     private Mirror mirror = new Mirror();
     public void run() {
@@ -43,14 +43,14 @@ public class BunBot extends DefaultBWListener {
 //    	System.out.println("ExecuteStrategy");
     	StrategyController.executeStrategy();
     	
-//    	System.out.println("ControllAllUnits");
+    	System.out.println("ControllAllUnits");
     	UnitManager.controllAllUnits();
     	
     	// Debug data to draw
     	DebugController.onFrame(); // Be sure to clear the debug console.
     	//DebugController.drawWorkerPaths();
 		MacroController.debugVariables();
-    	StrategyController.debugVariables();
+ //   	StrategyController.debugVariables();
 		InformationManager.writeToDebugConsole();
 		
     	DebugController.drawMapInformation();
@@ -106,6 +106,6 @@ public class BunBot extends DefaultBWListener {
     		UnitManager.put(unit.getID(), new UnitController(unit));
     }
     public static void main(String[] args) {
-        new BunBot().run();
+        new inNOVationBot().run();
     }
 }

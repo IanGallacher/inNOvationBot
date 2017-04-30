@@ -121,6 +121,16 @@ public class InformationManager {
 	{
 		return _playerUnitData.get(player).getNumUnits(type);
 	}
+//	
+//	public static int hasTech(UpgradeType type)
+//	{
+//		return hasTech(type, Globals.self);
+//	}
+//	
+//	public static int hasTech(UpgradeType type, Player player)
+//	{
+//		return _playerUnitData.get(player).getNumUnits(type);
+//	}
 	
 	
 	

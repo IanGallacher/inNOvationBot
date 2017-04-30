@@ -12,6 +12,7 @@ import UnitController.UnitManager;
 import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
+import bwapi.UpgradeType;
 import bwta.BWTA;
 
 
@@ -232,6 +233,21 @@ public class MacroController {
 //                bwta.Region r = BWTA.getRegion(Globals.self.getStartLocation().toPosition());
 //                myUnit.setRallyPoint(r.getChokepoints().get(0).getCenter());
 //            }
+        }
+    }
+
+    public static void researchUpgrades() {
+        // iterate through my units
+        for (Unit myUnit : Globals.self.getUnits()) {
+
+            
+
+            if (myUnit.getType() == UnitType.Protoss_Cybernetics_Core 
+    		&& myUnit.isBeingConstructed() == false) 
+            {
+            	myUnit.upgrade(UpgradeType.Singularity_Charge);
+               // myUnit.setRallyPoint(r.getChokepoints().get(0).getCenter());
+            }
         }
     }
     
