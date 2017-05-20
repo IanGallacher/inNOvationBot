@@ -15,6 +15,7 @@ import bwta.BaseLocation;
 import bwta.Chokepoint;
 
 import Globals.Globals;
+import UnitController.UnitController;
 import UnitController.UnitManager;
 
 public class DebugController {
@@ -247,4 +248,16 @@ public class DebugController {
 			}
 		}
 	}
+	
+	public static void drawUnitJobs()
+	{
+		for(UnitController uc : UnitManager.GetAllUnitControllers())
+		{
+			Globals.game.drawTextMap(
+    			uc.getPosition().getX(), uc.getPosition().getY() + 20, 
+    			uc.getJob().toString()
+    		);
+		}
+	}	
+	
 }

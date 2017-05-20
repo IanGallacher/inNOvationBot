@@ -705,8 +705,8 @@ public class GameState {
 	    for (int m=0; m<moves.size(); m++)
 	    {
 	    	//performUnitAction(moves.get(m));
-	    	move=moves.get(m);
-	    	ourUnit		= getUnit(move._player, move._unit);
+	    	move = moves.get(m);
+	    	ourUnit	= getUnit(move._player, move._unit);
 	    	//int player		= ourUnit.player();
 	    	if (moved.containsKey(ourUnit)){
 	    		continue;

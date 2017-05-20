@@ -53,6 +53,7 @@ public class StrategyController {
 
 	// be sure to only call once per frame.
 	public static void executeStrategy() {
+		
 		if (techGoal == TechGoal.DragoonTech) { // heavy macro strategy
 			MacroController.preventSupplyBlock();
 
@@ -64,8 +65,7 @@ public class StrategyController {
 
 			// Mineral spending goals.
 			//
-			
-			
+
 			if (InformationManager.getUnitCount(UnitType.Protoss_Probe) > _workerGoalBeforeExpand
 					* (InformationManager.getUnitCount(UnitType.Protoss_Nexus) + _plannedNexus)) {
 
@@ -86,6 +86,7 @@ public class StrategyController {
 			if (unitProductionFocus == UnitProduction.FocusOnWorkers) {
 				// If the current strategy is focusing on training workers, do
 				// that first.
+				MacroController.researchUpgrades();
 				MacroController.trainWorkers();
 				MacroController.trainArmy();
 			} else {

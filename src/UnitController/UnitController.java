@@ -49,12 +49,13 @@ public class UnitController {
 			this._job = JobType.GatherGas;
 			this.gatherGas();
 		} else {
-			this._job = JobType.GatherMinerals;
-			this.gatherMinerals();
+			this.assignToMinerals();
 		}
 	}
 
 	public void assignToMinerals() {
+		this._job = JobType.GatherMinerals;
+		this.gatherMinerals();
 	}
 	
 	// This will build the building the unit has been assigned to build. 
@@ -62,8 +63,11 @@ public class UnitController {
 		DebugController.debugConsolePrint("THING", this._thisUnit.isIdle());
 		if(this._thisUnit.isIdle()) 
 		{
-			this._thisUnit.build(_buildingToBuild, _buildingToBuildLocation);
-			this.assignToMinerals();
+			if(Globals.Globals.self.minerals() <= _buildingToBuild.mineralPrice())
+				return;
+			if(this._thisUnit.build(_buildingToBuild, _buildingToBuildLocation))
+				return;
+				//this.assignToMinerals();
 		}
 	}
 	

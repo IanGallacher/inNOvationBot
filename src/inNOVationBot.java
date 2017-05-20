@@ -43,7 +43,6 @@ public class inNOVationBot extends DefaultBWListener {
 //    	System.out.println("ExecuteStrategy");
     	StrategyController.executeStrategy();
     	
-    	System.out.println("ControllAllUnits");
     	UnitManager.controllAllUnits();
     	
     	// Debug data to draw
@@ -54,6 +53,7 @@ public class inNOVationBot extends DefaultBWListener {
 		InformationManager.writeToDebugConsole();
 		
     	DebugController.drawMapInformation();
+		DebugController.drawUnitJobs();
     	
     	// BaseData is no longer a singleton representing the current players main base. 
     	// Instead it is replaced with an arrayList called _allBases.
@@ -91,6 +91,7 @@ public class inNOVationBot extends DefaultBWListener {
     public void onUnitDestroy(Unit unit) {
     	InformationManager.onUnitDestroy(unit);
 	    UnitManager.get(unit.getID()).stopTask();
+	    UnitManager.NOTIFYDESTRUCTION(unit.getID());
     }
     
     // NOTE: THIS INCLUDES ASSIMILATORS/EXTRACTORS/REFINERIES

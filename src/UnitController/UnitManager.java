@@ -1,5 +1,6 @@
 package UnitController;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 
 import bwapi.*;
@@ -18,9 +19,16 @@ public class UnitManager {
 	// DONT FORGET TO KEEP BOTH WORKER'S AND _unitController UP TO DATE. 
 	// This redundancy is fast, but it is easy to break. That is why it is so important to eventually make workers private.
 	private static HashMap<Integer, UnitController> _unitControllers = new HashMap<Integer, UnitController>();
-
 	// TODO: Make the following private.
-	public static HashMap<Integer, UnitController> mineralWorkers = new HashMap<Integer, UnitController>();
+	public static HashMap<Integer, UnitController> mineralWorkers = new HashMap<Integer, UnitController>( );
+	
+	
+	public static Collection<UnitController> GetAllUnitControllers()
+	{
+		return _unitControllers.values();
+	}
+	
+	
 
 	// Called inside the onUnitCreate override.
 	public static void put(int unitID, UnitController uc) {
@@ -29,6 +37,11 @@ public class UnitManager {
 
 	public static UnitController get(int unitID) {
 		return _unitControllers.get(unitID);
+	}
+	
+	public static void NOTIFYDESTRUCTION(int unitID)
+	{
+		_unitControllers.remove(unitID);
 	}
 
 	
