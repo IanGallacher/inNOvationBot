@@ -66,7 +66,7 @@ class PlayerUnitData
 		        this.UnitData.put(unit.getID(), new UnitInfo(unit));
 		        
 		    	if(unit.getType().isBuilding())
-			        this._playerBuildings.put(unit.getID(), new UnitInfo());
+			        this._playerBuildings.put(unit.getID(), new UnitInfo(unit));
 		        
 			    // Increment the number of known units of UnitType. 
 			    //     Example:there were four drones. 

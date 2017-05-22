@@ -17,9 +17,7 @@ public class StrategyController {
 	public enum TechGoal {
 		Nexus, DragoonTech
 	};
-
-	private static int _plannedNexus = 0;
-	private static int _workerGoalBeforeExpand = 15;
+	
 	private static int _armySquadSizeGoal = 15;
 	private static TechGoal techGoal = TechGoal.DragoonTech;
 	private static UnitProduction unitProductionFocus = UnitProduction.FocusOnWorkers;
@@ -27,7 +25,6 @@ public class StrategyController {
 	// If there is a planned nexus, don't keep trying to expand.
 	public static void onUnitCreate(Unit unit) {
 		if (unit.getType() == UnitType.Protoss_Nexus && unit.getPlayer() == Globals.self) {
-			_plannedNexus--;
 			techGoal = TechGoal.DragoonTech;
 		}
 	}
@@ -48,7 +45,6 @@ public class StrategyController {
 		// UnitManager.mineralWorkers.size());
 		// DebugController.debugConsolePrint("GasWorkers",
 		// UnitManager.gasWorkers.size());
-		DebugController.debugConsolePrint("_plannedNexus", _plannedNexus);
 	}
 
 	// be sure to only call once per frame.
@@ -64,11 +60,9 @@ public class StrategyController {
 
 			// Do we have enough probes that we require another nexus?
 			// Take our number of probes we have and compare it to the number of probes it would take to almost saturate all your bases.
-			if (InformationManager.getUnitCount(UnitType.Protoss_Probe) > _workerGoalBeforeExpand
-					* (InformationManager.getUnitCount(UnitType.Protoss_Nexus) + _plannedNexus)) {
-
+			if (MacroController.AlmostFullySaturated()) {
 				techGoal = TechGoal.Nexus;
-				_plannedNexus++;
+				MacroController.PlanNexus();
 				System.out.printf("EXPANDING");
 			} else if (InformationManager.getUnitCount(UnitType.Protoss_Gateway) < 1
 					|| (InformationManager.getUnitCount(UnitType.Protoss_Cybernetics_Core) >= 1
@@ -76,7 +70,7 @@ public class StrategyController {
 				if (InformationManager.getUnitCount(UnitType.Protoss_Gateway) < 5) {
 					MacroController.buildBuilding(UnitType.Protoss_Gateway);
 				}
-			} else if (InformationManager.getUnitCount(UnitType.Protoss_Assimilator) < 1) {
+			} else if (InformationManager.getUnitCount(UnitType.Protoss_Assimilator) < 1 * InformationManager.getUnitCount(UnitType.Protoss_Nexus)) {
 				MacroController.buildBuilding(UnitType.Protoss_Assimilator);
 			} else if (InformationManager.getUnitCount(UnitType.Protoss_Cybernetics_Core) < 1) {
 				MacroController.buildBuilding(UnitType.Protoss_Cybernetics_Core);

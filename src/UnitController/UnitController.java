@@ -60,7 +60,6 @@ public class UnitController {
 	
 	// This will build the building the unit has been assigned to build. 
 	public void buildAssignedBuilding() {
-		DebugController.debugConsolePrint("THING", this._thisUnit.isIdle());
 		if(this._thisUnit.isIdle()) 
 		{
 			if(Globals.Globals.self.minerals() <= _buildingToBuild.mineralPrice())

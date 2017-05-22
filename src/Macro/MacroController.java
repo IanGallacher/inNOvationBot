@@ -26,10 +26,9 @@ public class MacroController {
     private static int _planned_minerals = UnitType.Protoss_Nexus.mineralPrice(); 
     
     private static int _planned_supply_depots = 0; // don't spend all our money on depots if capped. 
-    
-    
-    public static int _number_of_gateways = 0;
-    private static int _number_of_nexus = 1;
+
+	private static int _plannedNexus = 1; // Plan on building one nexus to account for the one that is made when the game starts. 
+	private static int _workerGoalBeforeExpand = 15;
 
     public static void debugVariables() {
 //    	DebugController.debugConsolePrint("planned_production", _planned_production);
@@ -52,16 +51,15 @@ public class MacroController {
         // If we don't check for the unit belonging to the main player, sometimes neutral structures at the start of the game will mess up the initial mineral count.
         if(unit.getType().isBuilding() && unit.getPlayer() == Globals.self)
         	_planned_minerals -= unit.getType().mineralPrice();
+
+		if (unit.getType() == UnitType.Protoss_Nexus && unit.getPlayer() == Globals.self) 
+			_plannedNexus--;
     }
     
     public static void onUnitComplete(Unit unit) {
     	if(unit.getType() == UnitType.Protoss_Pylon)
     	{
     		_planned_supply_depots--;
-    	}
-    	if(unit.getType() == UnitType.Protoss_Gateway)
-    	{
-    		_number_of_gateways++;
     	}
     }
     
@@ -263,6 +261,20 @@ public class MacroController {
     // total amount of supply that can possibly be in production.
     public static int productionCapacity() { 
     	// Probes take take up twice as much supply as usual because two can finish before a pylon is done.
+    	int _number_of_nexus = InformationManager.getUnitCount(UnitType.Protoss_Nexus);
+    	int _number_of_gateways = InformationManager.getUnitCount(UnitType.Protoss_Gateway);
     	return (4 * _number_of_nexus) + (4 * _number_of_gateways);
+    }
+    
+    public static boolean AlmostFullySaturated()
+    {
+    	return InformationManager.getUnitCount(UnitType.Protoss_Probe) > _workerGoalBeforeExpand
+		* (InformationManager.getUnitCount(UnitType.Protoss_Nexus) + _plannedNexus);
+    }
+    
+    // Will become obsolete once there is a better queue system for my strategies.
+    public static void PlanNexus()
+    {
+		_plannedNexus++;
     }
 }

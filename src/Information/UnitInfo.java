@@ -19,15 +19,6 @@ public class UnitInfo
 	    UnitType type;
 	    boolean  completed;
 
-	    public UnitInfo()
-	    {
-	        this.unitID = 0;
-	        this.lastHealth = 0;
-	        this.unit = null;
-	        this.lastPosition = Position.None;
-	        this.type = UnitType.None;
-	        this.completed = false;
-	    }
 	    
 	    public UnitInfo(Unit unit)
 	    {
