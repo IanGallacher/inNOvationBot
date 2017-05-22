@@ -30,8 +30,7 @@ public class InformationManager {
 	
 	static HashMap<Player, HashSet<bwta.Region> > _occupiedRegions; // bwta.Region IS DIFFERENT from bwapi.Region
 	
-	private static HashMap<Integer, Unit> _enemeyBuildings = new HashMap<Integer, Unit>();
-	public static HashMap<Integer, Unit> getEnemeyBuildings() { return _enemeyBuildings; }
+	public static HashMap<Integer, UnitInfo> getEnemeyBuildings() { return _playerUnitData.get(Globals.enemy).getBuildings(); }
 
 	
 	public static void OnStart()
@@ -150,7 +149,7 @@ public class InformationManager {
 	    
 
 	    if(unit.getPlayer() == Globals.enemy && unit.getType().isBuilding() && getEnemeyBuildings().containsKey(unit.getID()) == false) {
-	    	getEnemeyBuildings().put(unit.getID(), unit);
+	    	getEnemeyBuildings().put( unit.getID(), new UnitInfo(unit) );
 	    }
 	}
 	

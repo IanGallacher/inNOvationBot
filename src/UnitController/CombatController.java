@@ -49,7 +49,7 @@ public class CombatController {
 	
 	public static void commandCombatUnits() {
 		for (CombatSquad squad : _squadManager.values()) {
-			if (squad.troopsInSquad() >= 15) {
+			if (squad.troopsInSquad() >= 10) {
 				squad.attackEnemyBase(0);
 			}
 		}

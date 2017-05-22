@@ -239,14 +239,17 @@ public class MacroController {
     public static void researchUpgrades() {
         // iterate through my units
         for (Unit myUnit : Globals.self.getUnits()) {
-
-            
-
             if (myUnit.getType() == UnitType.Protoss_Cybernetics_Core 
     		&& myUnit.isBeingConstructed() == false) 
             {
             	myUnit.upgrade(UpgradeType.Singularity_Charge);
-               // myUnit.setRallyPoint(r.getChokepoints().get(0).getCenter());
+            }
+            
+            // get weapons upgrade if we have a forge.
+            if (myUnit.getType() == UnitType.Protoss_Forge
+    		&& myUnit.isBeingConstructed() == false) 
+            {
+            	myUnit.upgrade(UpgradeType.Protoss_Ground_Weapons);
             }
         }
     }

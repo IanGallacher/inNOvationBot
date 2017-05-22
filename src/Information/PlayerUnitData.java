@@ -15,9 +15,11 @@ import bwapi.UnitType;
 // TODO: Write tests to make sure redundancies get properly updated. 
 class PlayerUnitData
 	{
-	    // List of all units that currently exist for a player. 
-		public HashMap<Integer, UnitInfo> UnitData;
+	    // List of all units that currently exist for a player, including buildings.
+		public HashMap<Integer, UnitInfo> UnitData; // <UnitID, UnitInfo>
 		
+		// List of buildings for quick access.
+		private HashMap<Integer, UnitInfo> _playerBuildings = new HashMap<Integer, UnitInfo>();// <UnitID, UnitInfo>
 		
 		/////////////////////////////////////////
 		//      Data that we are tracking      //
@@ -49,20 +51,22 @@ class PlayerUnitData
 			this.UnitData = new HashMap<Integer, UnitInfo>();
 		}
 		
+		public HashMap<Integer, UnitInfo> getBuildings()
+		{
+			return _playerBuildings;
+		}
+		
 		public void updateUnit(Unit unit) {	
 	    	assert unit != null; 
 
 		    // The unit has never been seen before. 
 		    if (this.UnitData.containsKey(unit.getID()) == false)
 		    {
-		    	if(unit.getPlayer() == Globals.Globals.enemy)
-		    	{
-		    		System.out.println("ENEMEY BUILDING");
-		    	}
-		    	
-		    	
 			    // Make sure there is not going to be a null reference exception down the line.
-		        this.UnitData.put(unit.getID(), new UnitInfo());
+		        this.UnitData.put(unit.getID(), new UnitInfo(unit));
+		        
+		    	if(unit.getType().isBuilding())
+			        this._playerBuildings.put(unit.getID(), new UnitInfo());
 		        
 			    // Increment the number of known units of UnitType. 
 			    //     Example:there were four drones. 
@@ -71,9 +75,9 @@ class PlayerUnitData
 		    	this._numUnits.increment(unit.getType());
 		    }
 		    
+		    // Update the unit's info.
 			UnitInfo ui     = this.UnitData.get(unit.getID());
 		    ui.unit         = unit;
-		    ui.player       = unit.getPlayer();
 			ui.lastPosition = unit.getPosition();
 			ui.lastHealth   = unit.getHitPoints();
 		    ui.lastShields  = unit.getShields();
@@ -96,6 +100,9 @@ class PlayerUnitData
 	    	_numUnits.decrement(unit.getType());
 	    	
 	    	UnitData.remove(unit.getID());
+
+	    	if(unit.getType().isBuilding())
+		        this._playerBuildings.remove(unit.getID());
 	    }
 
 		

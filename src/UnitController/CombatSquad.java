@@ -1,15 +1,10 @@
 package UnitController;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import bwapi.*;
-import bwta.BWTA;
-
-import Debug.DebugController;
 import Globals.Globals;
 import Information.InformationManager;
-import Macro.GasGeyser;
-import Macro.MineralPatch;
+import Information.UnitInfo;
 
 public class CombatSquad {
 	private ArrayList<UnitController> _squad;
@@ -46,23 +41,12 @@ public class CombatSquad {
 	}
 	
 
-	boolean hasAttacked = false;
 	public void attackEnemyBase(int baseNumber) {
 		for (UnitController unit : _squad) {
-			if(hasAttacked == false)
-			{
-				unit.attack(InformationManager.getMainBaseLocation(Globals.enemy).toPosition());
-
-				// bwapi.UnitCommand c = new bwapi.UnitCommand(unit,
-				// bwapi.UnitCommandType.Attack_Move, , 1, 4,4);
-				// unit.issueCommand(UnitCommanType.)
-			} else if (unit.isIdle()) {
-				Unit attackTarget = (Unit) InformationManager.getEnemeyBuildings().values().toArray()[0];
-				unit.attack(attackTarget.getPosition());
-				System.out.println("FINISH HIM");
+			if (unit.isIdle()) {
+				UnitInfo attackTarget = (UnitInfo) InformationManager.getEnemeyBuildings().values().toArray()[0];
+				unit.attack(attackTarget.getUnitPosition());
 			}
 		} 
-		
-		if(hasAttacked == false) hasAttacked = true;
 	}
 }

@@ -5,7 +5,8 @@ import bwapi.*;
 //Giving credit where credit is due. Much of this code was inspired by UAlbertaBot.
 //https://github.com/davechurchill/ualbertabot/blob/master/UAlbertaBot/Source/UnitInfo.cpp
 
-class UnitInfo
+// This code is needed to keep track of enemy units in the fog of war.
+public class UnitInfo
 	{
 	    // we need to store all of this data because if the unit is not visible, we
 	    // can't reference it from the unit pointer
@@ -13,7 +14,6 @@ class UnitInfo
 	    int      unitID;
 	    int      lastHealth;
 	    int      lastShields;
-	    Player   player;
 	    Unit     unit;
 	    Position lastPosition;
 	    UnitType type;
@@ -21,13 +21,22 @@ class UnitInfo
 
 	    public UnitInfo()
 	    {
-	        unitID = 0;
-	        lastHealth = 0;
-	        player = null;
-	        unit = null;
-	        lastPosition = Position.None;
-	        type = UnitType.None;
-	        completed = false;
+	        this.unitID = 0;
+	        this.lastHealth = 0;
+	        this.unit = null;
+	        this.lastPosition = Position.None;
+	        this.type = UnitType.None;
+	        this.completed = false;
+	    }
+	    
+	    public UnitInfo(Unit unit)
+	    {
+	    	this.unitID = unit.getID();
+	    	this.lastHealth = unit.getHitPoints();
+	        this.unit = unit;
+	        this.lastPosition = unit.getPosition();
+	        this.type = unit.getType();
+	        this.completed = unit.isCompleted();
 	    }
 
 	    boolean ComapareID (Unit unit) 
@@ -39,7 +48,16 @@ class UnitInfo
 	    {
 	        return this.unitID == rhs.unitID;
 	    }
-
+	    
+	    public Unit getUnit()
+	    {
+	    	return this.unit;
+	    }
+	    
+	    public Position getUnitPosition()
+	    {
+	    	return lastPosition;
+	    }
 //	    boolean operator < (const UnitInfo & rhs) const
 //	    {
 //	        return this.unitID < rhs.unitID;

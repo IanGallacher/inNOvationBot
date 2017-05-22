@@ -53,11 +53,11 @@ public class inNOVationBot extends DefaultBWListener {
 		InformationManager.writeToDebugConsole();
 		
     	DebugController.drawMapInformation();
-		DebugController.drawUnitJobs();
+		// DebugController.drawUnitJobs();
     	
     	// BaseData is no longer a singleton representing the current players main base. 
     	// Instead it is replaced with an arrayList called _allBases.
-    	//Globals.BaseData.drawMapInformation(); 
+    	// Globals.BaseData.drawMapInformation(); 
     	DebugController.drawHealthBars();
     	//InformationManager.drawUnitInformation(425,30);
     }

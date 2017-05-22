@@ -64,7 +64,6 @@ public class StrategyController {
 			// }
 
 			// Mineral spending goals.
-			//
 
 			if (InformationManager.getUnitCount(UnitType.Protoss_Probe) > _workerGoalBeforeExpand
 					* (InformationManager.getUnitCount(UnitType.Protoss_Nexus) + _plannedNexus)) {
@@ -73,7 +72,8 @@ public class StrategyController {
 				_plannedNexus++;
 				System.out.printf("EXPANDING");
 			} else if (InformationManager.getUnitCount(UnitType.Protoss_Gateway) < 1
-					|| InformationManager.getUnitCount(UnitType.Protoss_Cybernetics_Core) >= 1) {
+					|| (InformationManager.getUnitCount(UnitType.Protoss_Cybernetics_Core) >= 1
+					&& InformationManager.getUnitCount(UnitType.Protoss_Forge) >= 1)) {
 				if (InformationManager.getUnitCount(UnitType.Protoss_Gateway) < 5) {
 					MacroController.buildBuilding(UnitType.Protoss_Gateway);
 				}
@@ -81,6 +81,8 @@ public class StrategyController {
 				MacroController.buildBuilding(UnitType.Protoss_Assimilator);
 			} else if (InformationManager.getUnitCount(UnitType.Protoss_Cybernetics_Core) < 1) {
 				MacroController.buildBuilding(UnitType.Protoss_Cybernetics_Core);
+			} else if (InformationManager.getUnitCount(UnitType.Protoss_Forge) < 1) {
+				MacroController.buildBuilding(UnitType.Protoss_Forge);
 			}
 
 			if (unitProductionFocus == UnitProduction.FocusOnWorkers) {
