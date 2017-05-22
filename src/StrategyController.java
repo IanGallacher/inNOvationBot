@@ -53,18 +53,17 @@ public class StrategyController {
 
 	// be sure to only call once per frame.
 	public static void executeStrategy() {
+		if(Globals.game.isPaused())
+			Globals.game.resumeGame();
 		
 		if (techGoal == TechGoal.DragoonTech) { // heavy macro strategy
 			MacroController.preventSupplyBlock();
-
-			// if(hasGas == false)
-			// {
-			// MacroController.HarvestGas(3);
-			// hasGas = true;
-			// }
-
+			
+			
 			// Mineral spending goals.
 
+			// Do we have enough probes that we require another nexus?
+			// Take our number of probes we have and compare it to the number of probes it would take to almost saturate all your bases.
 			if (InformationManager.getUnitCount(UnitType.Protoss_Probe) > _workerGoalBeforeExpand
 					* (InformationManager.getUnitCount(UnitType.Protoss_Nexus) + _plannedNexus)) {
 
